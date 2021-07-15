@@ -1,0 +1,30 @@
+.modal-content {
+	width: 900px;
+	right: 200px;
+}
+
+@media only screen and (max-width: 1000px) {
+	.modal-content {
+		width: 700px;
+		right: 100px;
+	}
+}
+@media only screen and (max-width: 700px) {
+	.modal-content {
+		width: 400px;
+		left: 50px;
+	}
+}
+
+@media only screen and (max-width: 500px) {
+	.modal-content {
+		width: 200px;
+		left: 150px;
+	}
+}
+
+@media only screen and (max-width: 400px) {
+	.modal-content {
+		width: 150px;
+	}
+}

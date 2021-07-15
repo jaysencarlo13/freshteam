@@ -1,0 +1,21 @@
+.sidebar {
+	z-index: 2;
+	height: 100%;
+	min-width: 60px;
+	max-width: 60px;
+	background: lightskyblue;
+	color: rgb(10, 9, 9);
+	position: fixed;
+}
+.sidebar li {
+	margin-top: 10px;
+	margin-left: 0.5em;
+}
+
+.sidebar li span {
+	font-size: 1.8rem;
+	color: black;
+}
+.sidebar div span {
+	margin-left: 0.4rem;
+}

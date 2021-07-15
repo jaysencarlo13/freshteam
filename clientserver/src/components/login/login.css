@@ -1,0 +1,56 @@
+.login-form {
+	border-style: solid;
+	border-width: 5px;
+	border-color: lightsteelblue;
+	border-radius: 50px;
+	box-shadow: 10px 15px lightsteelblue;
+	margin-top: 50px;
+	max-width: 500px;
+}
+
+.login-form h1 {
+	text-align: center;
+}
+
+.form-button-login {
+	text-align: center;
+}
+
+.form-button-login button {
+	width: 300px;
+}
+
+.login-form .error {
+	margin: 10px;
+	text-align: center;
+	color: black;
+	background-color: red;
+}
+
+.login-link {
+	text-align: center;
+}
+
+.login-link a {
+	font-size: 20px;
+}
+
+.alert {
+	text-align: center;
+}
+
+@media screen and (max-width: 400px) {
+	.login-form {
+		width: 500px;
+	}
+}
+
+@media screen and (max-width: 400px) {
+	.form-button-login button {
+		width: 100px;
+	}
+	.login-form h1 {
+		font-size: 30px;
+		text-align: center;
+	}
+}
