@@ -165,7 +165,7 @@ export default function _Navbar() {
 				<Navbar.Toggle aria-controls="basic-navbar-nav" />
 				<Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
 					<Nav>
-						<DropdownButton className="" menuAlign="right" title={<i class="fas fa-user"></i>}>
+						<DropdownButton className="" menuAlign="right" title={<i className="fas fa-user"></i>}>
 							<NavDropdown.Item href="/viewaccount">View Account</NavDropdown.Item>
 							<NavDropdown.Item href="#edit_account" onClick={handleShow}>
 								Edit Account
