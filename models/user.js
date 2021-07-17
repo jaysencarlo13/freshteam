@@ -26,11 +26,10 @@ const userSchema = new Schema({
 		type: String,
 	},
 	work_info: {
-		employee_id: {
-			type: String,
-			unique: true,
-		},
 		employee_status: {
+			type: String,
+		},
+		employee_id: {
 			type: String,
 		},
 		department: {
@@ -62,11 +61,6 @@ const userSchema = new Schema({
 			default: false,
 		},
 	},
-	my_interview: [
-		{
-			userid: { type: Types.ObjectId },
-		},
-	],
 });
 
 userSchema.pre('save', async function (next) {
