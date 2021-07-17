@@ -20,8 +20,8 @@ export default function WorkInfo({ data }) {
 		return (
 			<div className="col-md-6">
 				<h3>Work Info</h3>
-				{array.map((user) => (
-					<Paragraph title={user.title} value={user.value || '-'} />
+				{array.map((user, index) => (
+					<Paragraph key={index} title={user.title} value={user.value || '-'} />
 				))}
 			</div>
 		);

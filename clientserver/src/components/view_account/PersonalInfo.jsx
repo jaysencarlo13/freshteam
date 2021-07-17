@@ -6,11 +6,11 @@ export default function PersonalInfo({ data }) {
 	let array_fields = [];
 	if (data) {
 		array_fields = [
-			{ title: 'Name', value: data.name || '-' },
-			{ title: 'Birthdate', value: data.birthdate ? moment(data.birthdate).format('MMMM DD, YYYY') : undefined },
-			{ title: 'Contact Number', value: data.contact },
-			{ title: 'Email Address', value: data.email },
-			{ title: 'Home Address', value: data.home },
+			{ key: 1, title: 'Name', value: data.name || '-' },
+			{ key: 2, title: 'Birthdate', value: data.birthdate ? moment(data.birthdate).format('MMMM DD, YYYY') : undefined },
+			{ key: 3, title: 'Contact Number', value: data.contact },
+			{ key: 4, title: 'Email Address', value: data.email },
+			{ key: 5, title: 'Home Address', value: data.home },
 		];
 	}
 
@@ -19,7 +19,7 @@ export default function PersonalInfo({ data }) {
 			<div className="col-md-6">
 				<h3>Personal Info</h3>
 				{array_fields.map((user) => (
-					<Paragraph title={user.title} value={user.value || '-'} />
+					<Paragraph key={user.key} title={user.title} value={user.value || '-'} />
 				))}
 			</div>
 		);
