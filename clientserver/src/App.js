@@ -5,6 +5,7 @@ import Dashboard from './components/dashboard/Dashboard';
 import Auth from './Auth';
 import Logout from './components/logout/Logout';
 import ViewAccount from './components/view_account/ViewAccount';
+
 function App() {
 	return (
 		<Router>
