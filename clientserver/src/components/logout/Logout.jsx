@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import Auth from '../../Auth';
+import { Auth } from '../../Auth';
 
 function Logout() {
 	const [logout, setLogout] = useState(false);
