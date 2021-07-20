@@ -11,4 +11,9 @@ function Auth() {
 	}
 }
 
-export default Auth;
+function ServerAuth() {
+	localStorage.clear();
+	return <Redirect to="/login" />;
+}
+
+export { Auth, ServerAuth };
