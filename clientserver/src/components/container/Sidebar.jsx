@@ -1,5 +1,7 @@
 import React from 'react';
 import './sidebar.css';
+import Tippy from '@tippyjs/react';
+import 'tippy.js/dist/tippy.css';
 
 export default function Sidebar() {
 	return (
@@ -14,51 +16,65 @@ export default function Sidebar() {
 			<ul className="list-unstyled components navbar-nav-scroll">
 				<li>
 					<a href="/">
-						<span>
-							<i className="fas fa-tachometer-alt"></i>
-						</span>
+						<Tippy content="Dashboard" placement="right">
+							<span>
+								<i className="fas fa-tachometer-alt"></i>
+							</span>
+						</Tippy>
 					</a>
 				</li>
 				<li>
 					<a href="#1">
-						<span>
-							<i className="fas fa-inbox"></i>
-						</span>
+						<Tippy content="Inbox" placement="right">
+							<span>
+								<i className="fas fa-inbox"></i>
+							</span>
+						</Tippy>
 					</a>
 				</li>
 				<li>
 					<a href="#2">
-						<span>
-							<i className="fas fa-briefcase"></i>
-						</span>
+						<Tippy content="Recruitment" placement="right">
+							<span>
+								<i className="fas fa-briefcase"></i>
+							</span>
+						</Tippy>
 					</a>
 				</li>
 				<li>
 					<a href="#3">
-						<span>
-							<i className="fas fa-user-friends"></i>
-						</span>
+						<Tippy content="Employees" placement="right">
+							<span>
+								<i className="fas fa-user-friends"></i>
+							</span>
+						</Tippy>
 					</a>
 				</li>
 				<li>
 					<a href="#4">
-						<span>
-							<i className="fas fa-clock"></i>
-						</span>
+						<Tippy content="Time Off" placement="right">
+							<span>
+								<i className="fas fa-clock"></i>
+							</span>
+						</Tippy>
 					</a>
 				</li>
 				<li>
 					<a href="#5">
-						<span>
-							<i className="fas fa-chart-area"></i>
-						</span>
+						<Tippy content="Reports" placement="right">
+							<span>
+								<i className="fas fa-chart-area"></i>
+							</span>
+						</Tippy>
 					</a>
 				</li>
 				<li>
 					<a href="#6">
-						<span>
-							<i className="fas fa-cogs"></i>
-						</span>
+						<Tippy content="Settings" placement="right">
+							<span>
+								<i className="fas fa-cogs"></i>
+							</span>
+						</Tippy>
 					</a>
 				</li>
 			</ul>
