@@ -2,6 +2,8 @@ const User = require('../models/user');
 const moment = require('moment');
 const Session = require('../models/session');
 const Interviews = require('../models/interviews');
+const Applicants = require('../models/applicant');
+const JobPostings = require('../models/job_postings');
 
 exports.checkAuth = (req, res, next) => {
 	if (req.body) {
@@ -82,19 +84,50 @@ exports.getMyInterviews = async (req, res, next) => {
 			const arrayToday = [];
 			const arrayMissed = [];
 			const arrayUpcoming = [];
+			const arrayReferrals = [];
+			const arrayBirthdaycorner = [];
+			const arrayNewJoinees = [];
 
 			const users = await User.find();
-			const myinterviews_today = await Interviews.find({ userId: user._id, date_time: { $gte: moment().startOf('day').toDate(), $lte: moment().endOf('day').toDate() } });
-			const myinterviews_missed = await Interviews.find({ userId: user._id, date_time: { $lte: moment().startOf('day').toDate() } });
-			const myinterviews_upcoming = await Interviews.find({ userId: user._id, date_time: { $gte: moment().startOf('day').toDate() } });
-			const 
+			const applicant = await Applicants.find();
+			const job_postings = await JobPostings.find();
+			const { work_info } = await User.findById(user._id);
+			const myinterviews_today = await Interviews.find({ interviewer: user._id, date_time: { $gte: moment().startOf('day').toDate(), $lte: moment().endOf('day').toDate() } });
+			const myinterviews_missed = await Interviews.find({ interviewer: user._id, date_time: { $lte: moment().startOf('day').toDate() } });
+			const myinterviews_upcoming = await Interviews.find({ interviewer: user._id, date_time: { $gte: moment().startOf('day').toDate() } });
+			const myReferrals = await Applicants.find({ 'job_applications.referred_by': user._id });
+			const birthdayCorner = await User.aggregate([
+				{
+					$match: {
+						$expr: {
+							$and: [
+								{
+									$eq: [{ $month: '$birthdate' }, { $month: moment().toDate() }],
+								},
+								{
+									$gte: [{ $dayOfMonth: '$birthdate' }, { $dayOfMonth: moment().toDate() }],
+								},
+								{
+									$lte: [{ $dayOfMonth: '$birthdate' }, { $dayOfMonth: moment().endOf('month').toDate() }],
+								},
+							],
+						},
+					},
+				},
+				{
+					$sort: {
+						birthdate: 1,
+					},
+				},
+			]);
+			const newJoinees = await User.find({ 'work_info.organization_id': work_info.organization_id, 'work_info.join_date': { $gte: moment().subtract(7, 'days').toDate(), $lte: moment().toDate() } });
 
 			if (myinterviews_today.length) {
 				myinterviews_today.forEach((element) => {
-					const userthis = users.find((e) => e._id === element.interviewee);
-					const name = userthis.name;
-					const email = userthis.email;
-					const assignBy = users.find((e) => e._id === element.assignBy).name;
+					const userthis = applicant.find((e) => e._id.toString() === element.interviewee.toString());
+					const name = userthis.personal_info.name;
+					const email = userthis.personal_info.email;
+					const assignBy = users.find((e) => e._id.toString() === element.assignBy.toString()).name;
 					const date_time = element.date_time;
 					arrayToday.push({
 						name: name,
@@ -106,9 +139,9 @@ exports.getMyInterviews = async (req, res, next) => {
 			}
 			if (myinterviews_missed.length) {
 				myinterviews_missed.forEach((element) => {
-					const userthis = users.find((e) => e._id === element.interviewee);
-					const name = userthis.name;
-					const email = userthis.email;
+					const userthis = applicant.find((e) => e._id.toString() === element.interviewee.toString());
+					const name = userthis.personal_info.name;
+					const email = userthis.personal_info.email;
 					const assignBy = users.find((e) => e._id === element.assignBy).name;
 					const date_time = element.date_time;
 					arrayMissed.push({
@@ -121,9 +154,9 @@ exports.getMyInterviews = async (req, res, next) => {
 			}
 			if (myinterviews_upcoming.length) {
 				myinterviews_upcoming.forEach((element) => {
-					const userthis = users.find((e) => e._id.toString() === element.interviewee.toString());
-					const name = userthis.name;
-					const email = userthis.email;
+					const userthis = applicant.find((e) => e._id.toString() === element.interviewee.toString());
+					const name = userthis.personal_info.name || '';
+					const email = userthis.personal_info.email || '';
 					const assignBy = users.find((e) => e._id.toString() === element.assignBy.toString()).name;
 					const date_time = element.date_time;
 					arrayUpcoming.push({
@@ -134,9 +167,52 @@ exports.getMyInterviews = async (req, res, next) => {
 					});
 				});
 			}
-			res.json({ isSuccess: true, today: arrayToday, missed: arrayMissed, upcoming: arrayUpcoming });
+			if (myReferrals.length) {
+				myReferrals.forEach((element) => {
+					const { name, email } = element.personal_info;
+					let job_applications = [];
+					// element.job_applications.find((e) => e.referred_by.toString() === user._id.toString());
+					element.job_applications.find((e) => {
+						if (e.referred_by.toString() === user._id.toString()) {
+							job_applications.push(e);
+						}
+					});
+					job_applications.forEach(({ applied_job, date_applied, status }) => {
+						const { title } = job_postings.find((e) => e._id.toString() === applied_job.toString());
+						arrayReferrals.push({
+							name: name,
+							email: email,
+							applied_job: `${title} / ${status}`,
+							date_applied: date_applied,
+						});
+					});
+				});
+			}
+			if (birthdayCorner.length) {
+				birthdayCorner.forEach((element) => {
+					const { name, birthdate } = element;
+					arrayBirthdaycorner.push({
+						name: name,
+						birthdate: moment(birthdate).format('MMMM DD'),
+					});
+				});
+			}
+			if (newJoinees.length) {
+				newJoinees.forEach(({ name, email, work_info }) => {
+					arrayNewJoinees.push({
+						name: name,
+						email: email,
+						department: work_info.department,
+						title: work_info.title,
+						join_date: moment(work_info.join_date).format('MMMM DD, YYYY'),
+					});
+				});
+			}
+
+			res.json({ isSuccess: true, today: arrayToday, missed: arrayMissed, upcoming: arrayUpcoming, referrals: arrayReferrals, birthday_corner: arrayBirthdaycorner, new_joinees: arrayNewJoinees });
 		}
 	} catch (err) {
+		console.log(err);
 		res.status(500).json({ error: err, message: 'Something Went Wrong' });
 	}
 };
