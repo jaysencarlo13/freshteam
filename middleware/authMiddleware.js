@@ -21,7 +21,7 @@ async function check_sessionID(sessionID, userID) {
 		if (sessionID) {
 			session = await Session.find({ _id: sessionID });
 		}
-		if (session && session.length && userID) {
+		if (session && session.length !== 0 && userID) {
 			if (JSON.parse(session[0]._doc.session).passport.user === userID) return true;
 		}
 		return false;
