@@ -2,7 +2,7 @@ const { Schema, model, Types } = require('mongoose');
 
 const interviewSchema = new Schema(
 	{
-		userId: {
+		interviewer: {
 			type: Types.ObjectId,
 			required: true,
 		},
@@ -17,6 +17,9 @@ const interviewSchema = new Schema(
 		date_time: {
 			type: Date,
 			required: true,
+		},
+		location: {
+			type: String,
 		},
 	},
 	{
