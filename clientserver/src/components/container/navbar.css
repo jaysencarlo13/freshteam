@@ -13,3 +13,22 @@
 	color: black;
 	font-size: 1.5rem;
 }
+
+#add-new-id,
+#account-id {
+	margin-right: 20px;
+}
+
+#add-new-id::after,
+#account-id::after {
+	display: none;
+}
+
+#add-new-id {
+	background-color: lightskyblue;
+	color: black;
+}
+
+#account-id .fas {
+	color: grey;
+}
