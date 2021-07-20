@@ -26,6 +26,9 @@ const userSchema = new Schema({
 		type: String,
 	},
 	work_info: {
+		organization_id: {
+			type: Types.ObjectId,
+		},
 		employee_status: {
 			type: String,
 		},
@@ -74,4 +77,4 @@ userSchema.methods.checkPassword = async function (password) {
 	return result;
 };
 
-module.exports = model('User', userSchema);
+module.exports = model('Users', userSchema);
