@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import Register from './components/register/Register';
 import Login from './components/login/Login';
 import Dashboard from './components/dashboard/Dashboard';
-import Auth from './Auth';
+import { Auth } from './Auth';
 import Logout from './components/logout/Logout';
 import ViewAccount from './components/view_account/ViewAccount';
 
