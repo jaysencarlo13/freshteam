@@ -1,0 +1,17 @@
+.recruitment-nav {
+  margin-right: 100px;
+}
+.recruitment-nav .nav-item {
+  background-color: lightskyblue;
+}
+.recruitment-nav .nav-item:hover {
+  background-color: whitesmoke;
+  color: black;
+}
+.recruitment-nav .nav-link {
+  color: black;
+}
+
+.div-jobs {
+  margin-top: 50px;
+}

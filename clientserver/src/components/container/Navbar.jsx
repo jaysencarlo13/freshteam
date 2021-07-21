@@ -19,6 +19,16 @@ import axios from 'axios';
 import { set } from 'mongoose';
 import { ServerAuth } from '../../Auth';
 
+import { EditorState, convertToRaw } from 'draft-js';
+import { Editor } from 'react-draft-wysiwyg';
+import draftToHtml from 'draftjs-to-html';
+import htmlToDraft from 'html-to-draftjs';
+import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+toast.configure();
+
 export default function _Navbar() {
   //account-edit-start
   const [show, setShow] = useState(false);
@@ -241,6 +251,14 @@ export default function _Navbar() {
     alert_variant_addEmployee: undefined,
     alert_message_addEmployee: undefined,
     newEmployee: undefined,
+    show_add_jobPosting: false,
+    alert_add_jobPosting: undefined,
+    alert_variant_add_jobPosting: undefined,
+    alert_message_add_jobPosting: undefined,
+    job_posting_title: undefined,
+    job_posting_range: undefined,
+    job_posting_type: 'Regular or Permanent',
+    editorState: EditorState.createEmpty(),
   };
 
   const [
@@ -256,6 +274,14 @@ export default function _Navbar() {
       alert_variant_addEmployee,
       alert_message_addEmployee,
       newEmployee,
+      show_add_jobPosting,
+      alert_add_jobPosting,
+      alert_variant_add_jobPosting,
+      alert_message_add_jobPosting,
+      job_posting_title,
+      job_posting_range,
+      job_posting_type,
+      editorState,
     },
     setAddNewState,
   ] = useState(addnew_initialState);
@@ -278,6 +304,7 @@ export default function _Navbar() {
 
   const onChange_addnew = (e) => {
     const { name, value } = e.target;
+    console.log(name, value);
     setAddNewState((prevState) => ({ ...prevState, [name]: value }));
   };
 
@@ -334,14 +361,78 @@ export default function _Navbar() {
             alert_variant_addEmployee: 'success',
             alert_message_addEmployee: res.data.message,
           }));
+        } else if (res.data && res.data.isSuccess === false) {
+          setAddNewState((prevState) => ({
+            ...prevState,
+            alert_addEmployee: true,
+            alert_variant_addEmployee: 'danger',
+            alert_message_addEmployee: res.data.message,
+          }));
+        } else if (res.data && res.data.isAuthenticated === false) {
+          <ServerAuth />;
+        }
+      })
+      .catch((err) => {
+        setAddNewState((prevState) => ({
+          ...prevState,
+          alert_addEmployee: true,
+          alert_variant_addEmployee: 'danger',
+          alert_message_addEmployee: err.response.data.message,
+        }));
+      });
+  };
+
+  const handleShow_add_jobPosting = () => {
+    setAddNewState((prevState) => ({
+      ...prevState,
+      show_add_jobPosting: true,
+    }));
+  };
+
+  const handleClose_add_jobPosting = () => {
+    setAddNewState(addnew_initialState);
+  };
+
+  const handleSubmit_add_jobPosting = (e) => {
+    e.preventDefault();
+    const data = {
+      title: job_posting_title,
+      salary_range: job_posting_range,
+      type: job_posting_type,
+      editor: JSON.stringify(convertToRaw(editorState.getCurrentContent())),
+    };
+    axios
+      .post('/api/add/job_posting', { ...ticket, ...data })
+      .then((res) => {
+        if (res.data && res.data.isSuccess === true) {
+          toast.success(res.data.message, {
+            position: toast.POSITION.TOP_LEFT,
+            autoClose: 10000,
+          });
+          handleClose_add_jobPosting();
+        } else if (res.data.isAuthenticated === false) {
+          <ServerAuth />;
+        }
+      })
+      .catch((err) => {
+        if (err && err.response.data && err.response.data.message) {
+          toast.error(err.response.data.message, {
+            position: toast.POSITION.TOP_LEFT,
+            autoClose: 10000,
+          });
         }
       });
   };
+
+  const onEditorStateChange = (editorState) => {
+    setAddNewState((prevState) => ({ ...prevState, editorState: editorState }));
+  };
+
   //Add new dropdown End
 
   return (
-    <>
-      <Navbar>
+    <div>
+      <Navbar style={{ position: 'fixed' }}>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
           <DropdownButton
@@ -349,14 +440,16 @@ export default function _Navbar() {
             onMouseEnter={enter_addnew_hover}
             onMouseLeave={leave_addnew_hover}
             variant="info"
-            title={<i class="fas fa-plus"> Add New</i>}
+            title={<i className="fas fa-plus"> Add New</i>}
             alignRight={true}
             id="add-new-id"
           >
             <NavDropdown.Item onClick={handleShow_addDepartment}>
               Department
             </NavDropdown.Item>
-            <NavDropdown.Item>Job Posting</NavDropdown.Item>
+            <NavDropdown.Item onClick={handleShow_add_jobPosting}>
+              Job Posting
+            </NavDropdown.Item>
             <NavDropdown.Item onClick={handleShow_addEmployee}>
               Employee
             </NavDropdown.Item>
@@ -677,6 +770,98 @@ export default function _Navbar() {
           </Button>
         </Modal.Footer>
       </Modal>
-    </>
+
+      <Modal
+        show={show_add_jobPosting}
+        onHide={handleClose_add_jobPosting}
+        dialogClassName="modal-90w"
+        aria-labelledby="example-custom-modal-styling-title"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Job Posting</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {alert_add_jobPosting ? (
+            <Alert variant={alert_variant_add_jobPosting}>
+              <h2>{alert_message_add_jobPosting}</h2>
+            </Alert>
+          ) : (
+            ''
+          )}
+          <Form
+            id="modal-form-add-job-posting"
+            onSubmit={handleSubmit_add_jobPosting}
+          >
+            <Form.Group className="mb-3" controlId="name">
+              <Form.Label>Title</Form.Label>
+              <Form.Control
+                name="job_posting_title"
+                required
+                value={job_posting_title}
+                onChange={onChange_addnew}
+                size="lg"
+                type="text"
+              />
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="name">
+              <Form.Label>Salary Range</Form.Label>
+              <Form.Control
+                name="job_posting_range"
+                required
+                value={job_posting_range}
+                onChange={onChange_addnew}
+                size="lg"
+                type="text"
+              />
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="name">
+              <Form.Label>Select Employment Type</Form.Label>
+              <Form.Control
+                as="select"
+                name="job_posting_type"
+                required
+                value={job_posting_type}
+                onChange={onChange_addnew}
+                size="lg"
+                type="text"
+              >
+                <option value="Regular or Permanent">
+                  Regular or Permanent
+                </option>
+                <option value="Term or Fixed">Term or Fixed</option>
+                <option value="Project">Project</option>
+                <option value="Seasonal">Seasonal</option>
+                <option value="Casual">Casual</option>
+              </Form.Control>
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="name">
+              <Form.Label>
+                State your qualifications, requirements, benefits and etc.
+              </Form.Label>
+              <Editor
+                editorState={editorState}
+                toolbarClassName="toolbarClassName"
+                wrapperClassName="wrapperClassName"
+                editorClassName="editorClassName"
+                onEditorStateChange={onEditorStateChange}
+              />
+            </Form.Group>
+            ;
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose_add_jobPosting}>
+            Close
+          </Button>
+          <Button
+            variant="primary"
+            form="modal-form-add-job-posting"
+            type="Submit"
+          >
+            Post Job
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </div>
   );
 }

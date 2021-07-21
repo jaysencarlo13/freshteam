@@ -17,7 +17,6 @@ function Dashboard() {
   const [interviewData, setinterviewData] = useState(undefined);
 
   useEffect(() => {
-    console.log(interviewData);
     if (!interviewData) {
       const ticket = JSON.parse(localStorage.getItem('data'));
       axios

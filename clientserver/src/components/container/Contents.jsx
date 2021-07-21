@@ -4,13 +4,18 @@ import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 
 function Contents(props) {
-	return (
-		<>
-			<Sidebar />
-			<Navbar />
-			<div className="contents container-fluid">{props.children}</div>
-		</>
-	);
+  return (
+    <>
+      <Sidebar />
+      <Navbar />
+      <div
+        className="contents container-fluid"
+        style={{ paddingLeft: '100px' }}
+      >
+        {props.children}
+      </div>
+    </>
+  );
 }
 
 export default Contents;

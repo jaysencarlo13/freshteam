@@ -1,6 +1,7 @@
 const Organizations = require('../models/organization');
 const Users = require('../models/user');
 const Organization_Members = require('../models/organization_members');
+const JobPostings = require('../models/job_postings');
 
 exports.add_department = async (req, res, next) => {
   try {
@@ -39,12 +40,12 @@ exports.add_employee = async (req, res, next) => {
         });
 
       if (
-        user_to_be_add.work_info &&
-        user_to_be_add.work_info.organization_id
+        user_to_be_add[0]._doc.work_info &&
+        user_to_be_add[0]._doc.work_info.organization_id
       ) {
         const isAlreadyMember = await Organization_Members.find({
-          organization_id: thisuser.organization_id,
-          member_id: user_to_be_add._id,
+          organization_id: thisuser[0]._doc.organization_id,
+          member_id: user_to_be_add[0]._doc._id,
         });
         if (isAlreadyMember !== 0)
           return res.json({
@@ -58,16 +59,17 @@ exports.add_employee = async (req, res, next) => {
           });
       }
 
-      user_to_be_add.work_info.organization_id = thisuser.organization_id;
-      await user_to_be_add.save();
+      user_to_be_add[0]._doc.work_info.organization_id =
+        thisuser[0]._doc.organization_id;
+      await user_to_be_add[0].save();
       const newuser = new Organization_Members({
-        organization_id: userthis.organization_id,
-        member_id: user_to_be_add._id,
+        organization_id: thisuser[0]._doc.organization_id,
+        member_id: user_to_be_add[0]._doc._id,
       });
       await newuser.save();
       return res.json({
         isSuccess: true,
-        message: `Success adding ${user_to_be_add.name}`,
+        message: `Success adding ${user_to_be_add[0]._doc.name}`,
       });
     }
   } catch (err) {
@@ -76,5 +78,28 @@ exports.add_employee = async (req, res, next) => {
       error: err,
       message: 'Something Went Wrong!',
     });
+  }
+};
+
+exports.add_job_posting = async (req, res, next) => {
+  try {
+    if (req.body) {
+      const { user, title, salary_range, type, editor } = req.body;
+      const { organization_id } = await Organization_Members.findOne({
+        member_id: user._id,
+      });
+      const job_posting = new JobPostings({
+        organization_id: organization_id,
+        created_by: user._id,
+        title: title,
+        range: salary_range,
+        type: type,
+        editor: editor,
+      });
+      await job_posting.save();
+      res.json({ isSuccess: true, message: 'Success Posting a Job' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err, message: 'Something went Wrong!.' });
   }
 };
