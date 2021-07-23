@@ -18,11 +18,11 @@ exports.recruitment = async (req, res, next) => {
             });
             const job_posting = await JobPostings.find({
                 organization_id: organization_id,
-            });
+            }).sort({ createdAt: -1 });
             const candidate = await Candidates.find({});
 
             if (job_posting.length) {
-                job_posting.forEach(({ _id, title, range, type }) => {
+                job_posting.forEach(({ _id, title, range, type, createdAt }) => {
                     let number = 0;
                     if (candidate.length !== 0) {
                         candidate.forEach(({ job_posting_id }) => {
@@ -35,6 +35,7 @@ exports.recruitment = async (req, res, next) => {
                         range: range,
                         type: type,
                         candidates: number,
+                        createdAt: moment(createdAt).format('LLL'),
                     });
                 });
             }
@@ -43,5 +44,17 @@ exports.recruitment = async (req, res, next) => {
         }
     } catch (err) {
         res.status(500).json({ error: err, message: 'Something Went Wrong!' });
+    }
+};
+
+exports.candidates = async (req, res, next) => {
+    try {
+        if (req.body) {
+            const { user, postid } = req.body;
+            console.log(postid);
+            res.json({ isSuccess: true, message: 'Success' });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err, message: 'Something Went Wrong' });
     }
 };
