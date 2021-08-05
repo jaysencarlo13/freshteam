@@ -7,7 +7,7 @@ function Auth() {
     if (data && data.user && data.sessionID) {
         return '';
     } else {
-        return <Redirect to="/login" />;
+        return <Redirect to="/homepage" />;
     }
 }
 
@@ -16,4 +16,9 @@ function ServerAuth() {
     return <Redirect to="/login" />;
 }
 
-export { Auth, ServerAuth };
+function ApplyAuth() {
+    localStorage.clear();
+    return <Redirect to="/login_applicant" />;
+}
+
+export { Auth, ServerAuth, ApplyAuth };

@@ -5,6 +5,8 @@ const Interviews = require('../models/interviews');
 const Applicants = require('../models/applicant');
 const JobPostings = require('../models/job_postings');
 const Organization_Members = require('../models/organization_members');
+const Candidates = require('../models/candidates');
+const TalentPool = require('../models/talent_pool');
 
 exports.checkAuth = (req, res, next) => {
     if (req.body) {
@@ -21,8 +23,28 @@ exports.postDashboard = async (req, res, next) => {};
 exports.getUser = async (req, res, next) => {
     try {
         const { user } = req.body;
-        const _user = await User.findById(user._id);
-        res.json({ user: _user });
+        const { name, email, birthdate, home, contact } = await User.findById(user._id);
+        const { employee_id, status, department, title, join_date } = await Organization_Members.findOne({
+            member_id: user._id,
+        });
+        return res.json({
+            user: {
+                personal_info: {
+                    name,
+                    email,
+                    birthdate,
+                    home,
+                    contact,
+                },
+                work_info: {
+                    employee_id,
+                    status,
+                    department,
+                    title,
+                    join_date,
+                },
+            },
+        });
     } catch (err) {
         res.status(500).json({ error: err, message: 'Something went wrong' });
     }
@@ -49,10 +71,10 @@ exports.updateUser = async (req, res, next) => {
                 { _id: user._id },
                 {
                     ...personal_info,
-                    work_info,
                 }
             );
-            res.json({ isUpdated: true, message: 'Success updating user' });
+            await Organization_Members.findOneAndUpdate({ member_id: user._id }, { ...work_info });
+            return res.json({ isUpdated: true, message: 'Success updating user' });
         }
     } catch (err) {
         res.status(500).json({ error: err, message: 'Something went wrong!' });
@@ -105,7 +127,8 @@ exports.getMyInterviews = async (req, res, next) => {
                 interviewer: user._id,
                 date_time: { $gte: moment().startOf('day').toDate() },
             });
-            const myReferrals = await Applicants.find({ 'job_applications.referred_by': user._id });
+            const myReferrals_candidate = await Candidates.find({ referred_by: user._id });
+            const myReferrals_talentpool = await TalentPool.find({ referred_by: user._id });
             const birthdayCorner = await User.aggregate([
                 {
                     $match: {
@@ -133,9 +156,9 @@ exports.getMyInterviews = async (req, res, next) => {
                     },
                 },
             ]);
-            const newJoinees = await User.find({
-                'work_info.organization_id': organization_id,
-                'work_info.join_date': {
+            const newJoinees = await Organization_Members.find({
+                organization_id,
+                join_date: {
                     $gte: moment().subtract(7, 'days').toDate(),
                     $lte: moment().toDate(),
                 },
@@ -192,32 +215,41 @@ exports.getMyInterviews = async (req, res, next) => {
                     });
                 });
             }
-            if (myReferrals.length) {
-                myReferrals.forEach((element) => {
-                    const { name, email } = element.personal_info;
-                    let job_applications = [];
-                    // element.job_applications.find((e) => e.referred_by.toString() === user._id.toString());
-                    element.job_applications.find((e) => {
-                        if (e.referred_by.toString() === user._id.toString()) {
-                            job_applications.push(e);
-                        }
-                    });
-                    job_applications.forEach(({ applied_job, date_applied, status }) => {
-                        const jp = job_postings.find((e) => e._id.toString() === applied_job.toString());
+            if (myReferrals_candidate.length || myReferrals_talentpool.length) {
+                if (myReferrals_candidate.length)
+                    myReferrals_candidate.forEach((element) => {
+                        const { applicant_id, date_applied, status, job_posting_id } = element;
+                        const { personal_info } = applicant.find(
+                            (e) => e._id.toString() === applicant_id.toString()
+                        );
+                        const { name, email } = personal_info;
+                        const { title } = job_postings.find(
+                            (e) => e._id.toString() === job_posting_id.toString()
+                        );
                         arrayReferrals.push({
-                            name: name,
-                            email: email,
-                            applied_job: `${
-                                jp
-                                    ? jp.title
-                                        ? jp.title
-                                        : 'Job is no longer available'
-                                    : 'Job is no longer available'
-                            } / ${status}`,
-                            date_applied: date_applied,
+                            name,
+                            email,
+                            applied_job: title ? `${title}/${status}` : 'Job is Unavailable',
+                            date_applied: moment(date_applied).format('MMMM DD, YYYY'),
                         });
                     });
-                });
+                if (myReferrals_talentpool.length)
+                    myReferrals_talentpool.forEach((element) => {
+                        const { applicant_id, date_applied, status, job_posting_id } = element;
+                        const { personal_info } = applicant.find(
+                            (e) => e._id.toString() === applicant_id.toString()
+                        );
+                        const { name, email } = personal_info;
+                        const { title } = job_postings.find(
+                            (e) => e._id.toString() === job_posting_id.toString()
+                        );
+                        arrayReferrals.push({
+                            name,
+                            email,
+                            applied_job: title ? `${title}/${status}` : 'Job is Unavailable',
+                            date_applied: moment(date_applied).format('MMMM DD, YYYY'),
+                        });
+                    });
             }
             if (birthdayCorner.length) {
                 birthdayCorner.forEach((element) => {
@@ -229,13 +261,14 @@ exports.getMyInterviews = async (req, res, next) => {
                 });
             }
             if (newJoinees.length) {
-                newJoinees.forEach(({ name, email, work_info }) => {
+                newJoinees.forEach(({ member_id, department, title, join_date }) => {
+                    const { name, email } = users.find((e) => e._id.toString() === member_id.toString());
                     arrayNewJoinees.push({
-                        name: name,
-                        email: email,
-                        department: work_info.department,
-                        title: work_info.title,
-                        join_date: moment(work_info.join_date).format('MMMM DD, YYYY'),
+                        name,
+                        email,
+                        department,
+                        title,
+                        join_date: moment(join_date).format('MMMM DD, YYYY'),
                     });
                 });
             }
@@ -248,6 +281,22 @@ exports.getMyInterviews = async (req, res, next) => {
                 birthday_corner: arrayBirthdaycorner,
                 new_joinees: arrayNewJoinees,
             });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err, message: 'Something Went Wrong' });
+    }
+};
+
+exports.updateGoogle = async (req, res, next) => {
+    try {
+        if (req.body) {
+            const { user, google } = req.body;
+            const { email, password } = google;
+            const update_user = await User.findById(user._id);
+            update_user.google.username = email;
+            update_user.google.password = password;
+            await update_user.save();
+            res.json({ isSuccess: true, message: 'Success' });
         }
     } catch (err) {
         console.log(err);

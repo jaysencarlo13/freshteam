@@ -17,11 +17,6 @@ export default function Navigation({ active }) {
                     Talent Pool
                 </Nav.Link>
             </Nav.Item>
-            <Nav.Item>
-                <Nav.Link eventKey="conversation" href="/recruitment/conversation">
-                    Conversation
-                </Nav.Link>
-            </Nav.Item>
         </Nav>
     );
 }

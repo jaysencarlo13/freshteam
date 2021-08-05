@@ -1,0 +1,66 @@
+.inbox-sidebar {
+    height: 90vh;
+    color: black;
+    background-color: white;
+    text-align: center;
+    min-width: 130px;
+    max-width: 130px;
+}
+
+.inbox-sidebar .nav-link {
+    color: black;
+}
+
+.inbox-sidebar .nav-link:hover {
+    background-color: lightskyblue;
+}
+
+.inbox-sidebar .nav-link.active {
+    background-color: lightskyblue;
+}
+
+.inbox-sub-sidebar {
+    padding-left: 0;
+}
+
+.inbox-subsidebar {
+    margin-left: 1px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.inbox-subsidebar-card {
+    margin-bottom: 5px;
+}
+
+.inbox-subsidebar-card:hover {
+    background-color: lightskyblue;
+}
+
+.inbox-mail {
+    height: 90vh;
+}
+
+.inbox-mail-body {
+    margin-top: 50px;
+}
+
+.inbox-mail-body {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.inbox-selected {
+    overflow-y: auto;
+    max-height: 90vh;
+    overflow-x: auto;
+}
+
+.inbox-reply-editorClassName {
+    overflow-y: auto;
+    max-height: 35vh;
+}
+
+.Toastify__toast--success {
+    background-color: green;
+}

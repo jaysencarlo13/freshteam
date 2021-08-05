@@ -5,7 +5,7 @@ export default function Jobs({ data }) {
         <div className="row div-jobs">
             {data.map(({ id, title, candidates }) => {
                 return (
-                    <div className="col-md-2">
+                    <div key={id} className="col-md-2">
                         <Card
                             key={id}
                             style={{ width: '13rem', height: '15rem', color: 'black' }}
@@ -15,10 +15,8 @@ export default function Jobs({ data }) {
                         >
                             <Card.Header>{title.substring(0, 21) || 'No Title'}</Card.Header>
                             <Card.Body>
-                                <Card.Text>
-                                    <h4>{candidates || 0}</h4>
-                                    Candidates
-                                </Card.Text>
+                                <h4>{candidates || 0}</h4>
+                                <Card.Text>Candidates</Card.Text>
                             </Card.Body>
                             <Card.Footer
                                 href={'/jobpost/view?postid=' + id}

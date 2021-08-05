@@ -10,6 +10,14 @@ const talentpoolSchema = new Schema(
             type: Types.ObjectId,
             required: true,
         },
+        date_applied: {
+            type: Date,
+            required: true,
+        },
+        referred_by: {
+            type: String,
+            default: '',
+        },
     },
     {
         collection: 'talentpool',

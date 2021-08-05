@@ -55,7 +55,7 @@ export default function _Navbar() {
             },
             work_info: {
                 employee_id: id,
-                employee_status: status,
+                status: status,
                 department: department,
                 title: title,
                 join_date: join,
@@ -95,11 +95,11 @@ export default function _Navbar() {
     });
 
     if (user && !email) {
-        setName(user.name);
-        setBirthdate(user.birthdate ? moment(user.birthdate).format('YYYY-MM-DD') : undefined);
-        setContact(user.contact);
-        setEmail(user.email);
-        setHome(user.home);
+        setName(user.personal_info.name);
+        setBirthdate(user.personal_info.birthdate ? moment(user.birthdate).format('YYYY-MM-DD') : undefined);
+        setContact(user.personal_info.contact);
+        setEmail(user.personal_info.email);
+        setHome(user.personal_info.home);
         if (user.work_info) {
             setId(user.work_info.employee_id);
             setStatus(user.work_info.employee_status);
@@ -172,6 +172,8 @@ export default function _Navbar() {
                             alert_message: response.data.message,
                             alert_variant: 'success',
                         }));
+                    } else if (response.data.isAuthenticated === false) {
+                        <ServerAuth />;
                     } else {
                         setState((prevState) => ({
                             ...prevState,
@@ -281,9 +283,7 @@ export default function _Navbar() {
     };
 
     const onChange_addnew = (e) => {
-        console.log(e);
         const { name, value } = e.target;
-        console.log(name, value);
         setAddNewState((prevState) => ({ ...prevState, [name]: value }));
     };
 
@@ -771,7 +771,6 @@ export default function _Navbar() {
                                 onEditorStateChange={onEditorStateChange}
                             />
                         </Form.Group>
-                        ;
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>

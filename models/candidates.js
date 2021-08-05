@@ -10,9 +10,22 @@ const candidateSchema = new Schema(
             type: Types.ObjectId,
             required: true,
         },
+        date_applied: {
+            type: Date,
+            required: true,
+        },
+        referred_by: {
+            type: String,
+            default: '',
+        },
+        status: {
+            type: String,
+            default: 'Exam',
+        },
     },
     {
         collection: 'candidates',
+        timestamps: true,
     }
 );
 

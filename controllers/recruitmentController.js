@@ -6,6 +6,7 @@ const Applicants = require('../models/applicant');
 const JobPostings = require('../models/job_postings');
 const Organization_Members = require('../models/organization_members');
 const Candidates = require('../models/candidates');
+const Talentpool = require('../models/talent_pool');
 
 exports.recruitment = async (req, res, next) => {
     try {
@@ -51,8 +52,186 @@ exports.candidates = async (req, res, next) => {
     try {
         if (req.body) {
             const { user, postid } = req.body;
-            console.log(postid);
+            const arrayCandidates = [];
+            const { organization_id } = await Organization_Members.findOne({ member_id: user._id });
+            const job_postings = await JobPostings.find({ organization_id }, '_id');
+            const candidates = postid
+                ? await Candidates.find({ job_posting_id: postid })
+                : await Candidates.find({ job_posting_id: [...job_postings] });
+
+            const applicants = await Applicants.find();
+            const job_posting = await JobPostings.find();
+            if (candidates) {
+                candidates.forEach(({ _id, applicant_id, job_posting_id, status }) => {
+                    const { personal_info } = applicants.find(
+                        (e) => e._id.toString() === applicant_id.toString()
+                    );
+                    const { name, email, contact } = personal_info;
+                    const { title } = job_posting.find((e) => e._id.toString() === job_posting_id.toString());
+                    arrayCandidates.push({
+                        candidate_id: _id,
+                        applicant_id,
+                        name,
+                        email,
+                        contact,
+                        title,
+                        status,
+                    });
+                });
+            }
+            return res.json({ isSuccess: true, message: 'Success', candidates: arrayCandidates });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err, message: 'Something Went Wrong' });
+    }
+};
+
+exports.fetchinfo = async (req, res, next) => {
+    try {
+        if (req.body) {
+            const { user, applicantId } = req.body;
+            const applicant = await Applicants.findById(applicantId);
+            const isPersonalInfo = applicant.personal_info ? true : false;
+            const isWorkExperience = applicant.work_experience.length > 0 ? true : false;
+            const isEducation = applicant.education.length > 0 ? true : false;
+            const isSkills = applicant.skills.length > 0 ? true : false;
+            const isCertification = applicant.certification_licenses.length > 0 ? true : false;
+            res.json({
+                isSuccess: true,
+                message: 'Success',
+                applicant: {
+                    isPersonalInfo,
+                    isWorkExperience,
+                    isEducation,
+                    isSkills,
+                    isCertification,
+                    applicant,
+                },
+            });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err, message: 'Something Went Wrong!' });
+    }
+};
+
+exports.update = async (req, res, next) => {
+    try {
+        if (req.body) {
+            const { user, status, candidate_id } = req.body;
+            const candidate = await Candidates.findByIdAndUpdate(candidate_id, { status: status });
             res.json({ isSuccess: true, message: 'Success' });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err, message: 'Something Went Wrong' });
+    }
+};
+
+exports.remove = async (req, res, next) => {
+    try {
+        if (req.body) {
+            const { candidate_id } = req.body;
+            await Candidates.findByIdAndRemove(candidate_id);
+            res.json({ isSuccess: true, message: 'Success' });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err, message: 'Remove Failed!. Something Went Wrong' });
+    }
+};
+
+exports.talentpool = async (req, res, next) => {
+    try {
+        if (req.body) {
+            let arrayTalent = [];
+            let { user, search } = req.body;
+            search = search === '' ? undefined : search;
+            const { organization_id } = await Organization_Members.findOne({ member_id: user._id });
+            const jobpost = search
+                ? await JobPostings.find(
+                      { organization_id, title: { $regex: search, $options: 'i' } },
+                      '_id title'
+                  )
+                : await JobPostings.find({ organization_id }, '_id title');
+            const talentpool = await Talentpool.find(
+                {
+                    job_posting_id: [
+                        ...jobpost.map((e) => {
+                            return e._id;
+                        }),
+                    ],
+                },
+                '_id job_posting_id applicant_id date_applied referred_by'
+            );
+            const applicant = await Applicants.find(
+                {
+                    _id: [
+                        ...talentpool.map((e) => {
+                            return e.applicant_id;
+                        }),
+                    ],
+                },
+                '_id personal_info work_experience education skills certification_licenses additional_information file'
+            );
+
+            talentpool.forEach(({ _id, job_posting_id, applicant_id, date_applied, referred_by }) => {
+                const {
+                    personal_info,
+                    work_experience,
+                    education,
+                    skills,
+                    certification_licenses,
+                    additional_information,
+                    file,
+                } = applicant.find((e) => e._id.toString() === applicant_id.toString());
+                const { title } = jobpost.find((e) => e._id.toString() === job_posting_id.toString());
+                arrayTalent.push({
+                    talentpool_id: _id,
+                    job_posting_id,
+                    applicant_id,
+                    date_applied,
+                    personal_info,
+                    work_experience,
+                    education,
+                    skills,
+                    certification_licenses,
+                    additional_information,
+                    file,
+                    title,
+                    referred_by,
+                });
+            });
+            res.json({ isSuccess: true, message: 'Success', talentpool: arrayTalent });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err, message: 'Something went wrong' });
+    }
+};
+
+exports.talentpool_add = async (req, res, next) => {
+    try {
+        if (req.body) {
+            const { talentpool } = req.body;
+            const { talentpool_id, job_posting_id, applicant_id, date_applied, referred_by } = talentpool;
+            const newCandidate = new Candidates({
+                job_posting_id,
+                applicant_id,
+                date_applied,
+                referred_by,
+            });
+            await newCandidate.save();
+            await Talentpool.findByIdAndDelete(talentpool_id);
+            res.json({ isSuccess: true, message: 'Adding to Candidates Success' });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err, message: 'Something Went Wrong' });
+    }
+};
+
+exports.talentpool_remove = async (req, res, next) => {
+    try {
+        if (req.body) {
+            const { talentpool } = req.body;
+            await Talentpool.findByIdAndDelete(talentpool['talentpool_id']);
+            res.json({ isSuccess: true, message: 'Removing from talent pool Success' });
         }
     } catch (err) {
         res.status(500).json({ error: err, message: 'Something Went Wrong' });

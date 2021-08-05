@@ -1,0 +1,49 @@
+.candidates-table {
+    margin-top: 50px;
+    max-width: 95%;
+    text-align: center;
+    /* border: 2px solid black;
+    border-radius: 10px;
+    margin-bottom: 0; */
+}
+
+.candidates-table-head {
+    background-color: lightskyblue;
+
+    border-radius: 50px;
+}
+
+.candidates-table-body {
+    background-color: #e5e4e2;
+}
+
+.candidates-table-body:hover {
+    background-color: skyblue;
+}
+
+.candidates-pagination {
+    width: 100%;
+    justify-content: flex-end;
+    max-width: 95%;
+}
+
+.react-bootstrap-table-pagination {
+    max-width: 95%;
+}
+
+.react-bootstrap-table-pagination .react-bootstrap-table-page-btns-ul {
+    background-color: black;
+}
+
+.modal-body-candidate-update {
+    overflow-y: scroll;
+    max-height: 76vh;
+}
+
+.modal-body-status-candidate-update {
+    height: 50px;
+}
+
+.Toastify__toast--success {
+    background-color: green;
+}

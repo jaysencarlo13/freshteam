@@ -16,6 +16,11 @@ const Users = require('./models/user');
 const Organizations = require('./models/organization');
 const Organization_Members = require('./models/organization_members');
 const JobPostings = require('./models/job_postings');
+const Candidates = require('./models/candidates');
+const Talentpool = require('./models/talent_pool');
+const Inbox = require('./models/inbox');
+
+const minify = require('html-minifier').minify;
 
 app.use(json());
 app.use(urlencoded({ extended: true }));
@@ -47,9 +52,11 @@ require('./middleware/sanitizeBody');
 app.use('/api', require('./routes/dashboardRoutes'));
 app.use('/register', require('./routes/registerRoutes'));
 app.use('/login', require('./routes/loginRoutes'));
+app.use('/api/applicant', require('./routes/applicantRoutes'));
 app.use('/api/add', require('./routes/addRoutes'));
 app.use('/api/recruitment', require('./routes/recruitmentRoutes'));
 app.use('/api/jobpost', require('./routes/jobpostRoutes'));
+app.use('/api/inbox', require('./routes/inboxRoutes'));
 
 app.listen(3001, async (err) => {
     if (err) throw err;
@@ -65,7 +72,7 @@ app.listen(3001, async (err) => {
     }
     const applicant = await Applicant.find({});
     if (applicant.length === 0) {
-        const newApplicant = new Applicant({
+        let newApplicant = new Applicant({
             _id: '60f1d510429ab43a547d8a90',
             personal_info: {
                 name: 'Applicant Name',
@@ -74,16 +81,21 @@ app.listen(3001, async (err) => {
                 home: 'Applicants Home',
                 contact: '11111111111',
             },
-            job_applications: [
-                {
-                    applied_job: '60f1d510429ab43a547d8a70',
-                    date_applied: moment().subtract(27, 'days'),
-                    status: 'Validation',
-                    referred_by: '60f1d510429ab43a547d8a80',
-                },
-            ],
+            password: 'jaysen1234',
         });
-        newApplicant.save();
+        await newApplicant.save();
+        newApplicant = new Applicant({
+            _id: '60f1d510429ab43a547d8a91',
+            personal_info: {
+                name: 'Liam Olivia',
+                email: 'liam@applicant.com',
+                birthdate: moment().subtract(27, 'years'),
+                home: 'Applicants Home',
+                contact: '22222222222',
+            },
+            password: 'jaysen1234',
+        });
+        await newApplicant.save();
     }
     const users = await Users.find({});
     if (users.length === 0) {
@@ -95,13 +107,6 @@ app.listen(3001, async (err) => {
             birthdate: moment('07-30-1996', 'MM-DD-YYYY'),
             contact: '09650470370',
             home: 'Cabuyao Laguna Phil.',
-            work_info: {
-                organization_id: '60f1d510429ab43a547d8a79',
-                employee_id: 'E202105261',
-                department: 'Software',
-                title: 'Manager',
-                join_date: moment('05-26-2021', 'MM-DD-YYYY'),
-            },
         });
         await newUser.save();
         newUser = new Users({
@@ -112,13 +117,6 @@ app.listen(3001, async (err) => {
             birthdate: moment('07-25-1996', 'MM-DD-YYYY'),
             contact: '09650470370',
             home: 'Cabuyao Laguna Phil.',
-            work_info: {
-                organization_id: '60f1d510429ab43a547d8a79',
-                employee_id: 'E201505261',
-                department: 'HR',
-                title: 'Recruiter',
-                join_date: moment('05-26-2015', 'MM-DD-YYYY'),
-            },
         });
         await newUser.save();
         newUser = new Users({
@@ -129,13 +127,6 @@ app.listen(3001, async (err) => {
             birthdate: moment('07-20-1996', 'MM-DD-YYYY'),
             contact: '09650470370',
             home: 'Cabuyao Laguna Phil.',
-            work_info: {
-                organization_id: '60f1d510429ab43a547d8a79',
-                employee_id: 'E202107181',
-                department: 'Software',
-                title: 'Junior Developer',
-                join_date: moment('07-18-2021', 'MM-DD-YYYY'),
-            },
         });
         await newUser.save();
     }
@@ -157,16 +148,28 @@ app.listen(3001, async (err) => {
         let organization_member = new Organization_Members({
             member_id: '60f1d510429ab43a547d8a80',
             organization_id: '60f1d510429ab43a547d8a79',
+            employee_id: 'E0001',
+            department: 'Software',
+            title: 'Manager',
+            join_date: moment().subtract(2, 'years'),
         });
         await organization_member.save();
         organization_member = new Organization_Members({
             member_id: '60f1d510429ab43a547d8a81',
             organization_id: '60f1d510429ab43a547d8a79',
+            employee_id: 'E0002',
+            department: 'HR',
+            title: 'Manager',
+            join_date: moment().subtract(1, 'year'),
         });
         await organization_member.save();
         organization_member = new Organization_Members({
             member_id: '60f1d510429ab43a547d8a82',
             organization_id: '60f1d510429ab43a547d8a79',
+            employee_id: 'E0003',
+            department: 'Software',
+            title: 'Junior Developer',
+            join_date: moment().subtract(2, 'months'),
         });
         await organization_member.save();
     }
@@ -232,21 +235,81 @@ app.listen(3001, async (err) => {
                             { offset: 2882, length: 39, style: 'fontsize-13.3328' },
                             { offset: 2922, length: 173, style: 'fontsize-13.3328' },
                             { offset: 3096, length: 85, style: 'fontsize-13.3328' },
-                            { offset: 0, length: 380, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 381, length: 30, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 412, length: 291, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 704, length: 331, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 1036, length: 22, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 1059, length: 290, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 1350, length: 354, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 1705, length: 466, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 2172, length: 45, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 2218, length: 290, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 2509, length: 206, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 2716, length: 165, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 2882, length: 39, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 2922, length: 173, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 3096, length: 85, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
+                            {
+                                offset: 0,
+                                length: 380,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 381,
+                                length: 30,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 412,
+                                length: 291,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 704,
+                                length: 331,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 1036,
+                                length: 22,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 1059,
+                                length: 290,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 1350,
+                                length: 354,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 1705,
+                                length: 466,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 2172,
+                                length: 45,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 2218,
+                                length: 290,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 2509,
+                                length: 206,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 2716,
+                                length: 165,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 2882,
+                                length: 39,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 2922,
+                                length: 173,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 3096,
+                                length: 85,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
                         ],
                         entityRanges: [],
                         data: { 'text-align': 'start' },
@@ -260,7 +323,11 @@ app.listen(3001, async (err) => {
                             { offset: 0, length: 111, style: 'color-rgb(45,45,45)' },
                             { offset: 0, length: 111, style: 'bgcolor-rgb(255,255,255)' },
                             { offset: 0, length: 111, style: 'fontsize-13.3328' },
-                            { offset: 0, length: 111, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
+                            {
+                                offset: 0,
+                                length: 111,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
                         ],
                         entityRanges: [],
                         data: {},
@@ -274,7 +341,11 @@ app.listen(3001, async (err) => {
                             { offset: 0, length: 44, style: 'color-rgb(45,45,45)' },
                             { offset: 0, length: 44, style: 'bgcolor-rgb(255,255,255)' },
                             { offset: 0, length: 44, style: 'fontsize-13.3328' },
-                            { offset: 0, length: 44, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
+                            {
+                                offset: 0,
+                                length: 44,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
                         ],
                         entityRanges: [],
                         data: {},
@@ -288,7 +359,11 @@ app.listen(3001, async (err) => {
                             { offset: 0, length: 198, style: 'color-rgb(45,45,45)' },
                             { offset: 0, length: 198, style: 'bgcolor-rgb(255,255,255)' },
                             { offset: 0, length: 198, style: 'fontsize-13.3328' },
-                            { offset: 0, length: 198, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
+                            {
+                                offset: 0,
+                                length: 198,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
                         ],
                         entityRanges: [],
                         data: { 'text-align': 'start' },
@@ -302,7 +377,11 @@ app.listen(3001, async (err) => {
                             { offset: 0, length: 19, style: 'color-rgb(45,45,45)' },
                             { offset: 0, length: 19, style: 'bgcolor-rgb(255,255,255)' },
                             { offset: 0, length: 19, style: 'fontsize-13.3328' },
-                            { offset: 0, length: 19, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
+                            {
+                                offset: 0,
+                                length: 19,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
                         ],
                         entityRanges: [],
                         data: { 'text-align': 'start' },
@@ -372,21 +451,81 @@ app.listen(3001, async (err) => {
                             { offset: 2882, length: 39, style: 'fontsize-13.3328' },
                             { offset: 2922, length: 173, style: 'fontsize-13.3328' },
                             { offset: 3096, length: 85, style: 'fontsize-13.3328' },
-                            { offset: 0, length: 380, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 381, length: 30, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 412, length: 291, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 704, length: 331, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 1036, length: 22, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 1059, length: 290, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 1350, length: 354, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 1705, length: 466, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 2172, length: 45, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 2218, length: 290, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 2509, length: 206, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 2716, length: 165, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 2882, length: 39, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 2922, length: 173, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
-                            { offset: 3096, length: 85, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
+                            {
+                                offset: 0,
+                                length: 380,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 381,
+                                length: 30,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 412,
+                                length: 291,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 704,
+                                length: 331,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 1036,
+                                length: 22,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 1059,
+                                length: 290,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 1350,
+                                length: 354,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 1705,
+                                length: 466,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 2172,
+                                length: 45,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 2218,
+                                length: 290,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 2509,
+                                length: 206,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 2716,
+                                length: 165,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 2882,
+                                length: 39,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 2922,
+                                length: 173,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
+                            {
+                                offset: 3096,
+                                length: 85,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
                         ],
                         entityRanges: [],
                         data: { 'text-align': 'start' },
@@ -400,7 +539,11 @@ app.listen(3001, async (err) => {
                             { offset: 0, length: 111, style: 'color-rgb(45,45,45)' },
                             { offset: 0, length: 111, style: 'bgcolor-rgb(255,255,255)' },
                             { offset: 0, length: 111, style: 'fontsize-13.3328' },
-                            { offset: 0, length: 111, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
+                            {
+                                offset: 0,
+                                length: 111,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
                         ],
                         entityRanges: [],
                         data: {},
@@ -414,7 +557,11 @@ app.listen(3001, async (err) => {
                             { offset: 0, length: 44, style: 'color-rgb(45,45,45)' },
                             { offset: 0, length: 44, style: 'bgcolor-rgb(255,255,255)' },
                             { offset: 0, length: 44, style: 'fontsize-13.3328' },
-                            { offset: 0, length: 44, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
+                            {
+                                offset: 0,
+                                length: 44,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
                         ],
                         entityRanges: [],
                         data: {},
@@ -428,7 +575,11 @@ app.listen(3001, async (err) => {
                             { offset: 0, length: 198, style: 'color-rgb(45,45,45)' },
                             { offset: 0, length: 198, style: 'bgcolor-rgb(255,255,255)' },
                             { offset: 0, length: 198, style: 'fontsize-13.3328' },
-                            { offset: 0, length: 198, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
+                            {
+                                offset: 0,
+                                length: 198,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
                         ],
                         entityRanges: [],
                         data: { 'text-align': 'start' },
@@ -442,7 +593,11 @@ app.listen(3001, async (err) => {
                             { offset: 0, length: 19, style: 'color-rgb(45,45,45)' },
                             { offset: 0, length: 19, style: 'bgcolor-rgb(255,255,255)' },
                             { offset: 0, length: 19, style: 'fontsize-13.3328' },
-                            { offset: 0, length: 19, style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif' },
+                            {
+                                offset: 0,
+                                length: 19,
+                                style: 'fontfamily-Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                            },
                         ],
                         entityRanges: [],
                         data: { 'text-align': 'start' },
@@ -453,4 +608,97 @@ app.listen(3001, async (err) => {
         });
         await jobposting.save();
     }
+    const candidates = await Candidates.find({});
+    if (candidates.length === 0) {
+        const newCandidate = new Candidates({
+            job_posting_id: '60f1d510429ab43a547d8a70',
+            applicant_id: '60f1d510429ab43a547d8a91',
+            date_applied: moment().subtract(5, 'days').toDate(),
+            status: 'Exam',
+            referred_by: '60f1d510429ab43a547d8a80',
+        });
+        await newCandidate.save();
+    }
+    const talentpool = await Talentpool.find({});
+    if (talentpool.length === 0) {
+        const newTalent = new Talentpool({
+            job_posting_id: '60f1d510429ab43a547d8a70',
+            applicant_id: '60f1d510429ab43a547d8a90',
+            date_applied: moment().subtract(1, 'week').toDate(),
+        });
+        await newTalent.save();
+    }
+    // const inbox = await Inbox.find();
+    // if (inbox.length === 0) {
+    //     let newInbox = new Inbox({
+    //         to: ['jaysencarlo13@gmail.com'],
+    //         cc: ['jaysencarlo15@gmail.com'],
+    //         bcc: ['jaysencarlo16@gmail.com'],
+    //         from: 'jaysencarlo14@gmail.com',
+    //         date: moment().subtract(12, 'days').toDate(),
+    //         subject: 'This is first for example only',
+    //         name: 'Loomvideo',
+    //         body: {
+    //             text: `bodybodybodybody`,
+    //             html: `<div dir="ltr">Body<div><br></div><div>Body<br></div><div><br></div><div>Body<br></div><div><br></div><div>Body<br></div></div>`,
+    //         },
+    //     });
+    //     await newInbox.save();
+    //     newInbox = new Inbox({
+    //         to: ['jaysencarlo13@gmail.com'],
+    //         cc: ['jaysencarlo15@gmail.com'],
+    //         bcc: ['jaysencarlo16@gmail.com'],
+    //         from: 'jaysencarlo15@gmail.com',
+    //         date: moment().subtract(11, 'days').toDate(),
+    //         subject: 'This is second for example only',
+    //         name: 'Hubstaff',
+    //         body: {
+    //             text: `bodybodybodybody`,
+    //             html: `<div dir="ltr">Body<div><br></div><div>Body<br></div><div><br></div><div>Body<br></div><div><br></div><div>Body<br></div></div>`,
+    //         },
+    //     });
+    //     await newInbox.save();
+    //     newInbox = new Inbox({
+    //         to: ['jaysencarlo13@gmail.com'],
+    //         cc: ['jaysencarlo15@gmail.com'],
+    //         bcc: ['jaysencarlo16@gmail.com'],
+    //         from: 'liam@applicant.com',
+    //         date: moment().subtract(10, 'days').toDate(),
+    //         subject: 'This is third for example only',
+    //         name: 'Jaysen',
+    //         body: {
+    //             text: `bodybodybodybody`,
+    //             html: `<div dir="ltr">Body<div><br></div><div>Body<br></div><div><br></div><div>Body<br></div><div><br></div><div>Body<br></div></div>`,
+    //         },
+    //     });
+    //     await newInbox.save();
+    //     newInbox = new Inbox({
+    //         to: ['jaysencarlo13@gmail.com'],
+    //         cc: ['jaysencarlo15@gmail.com'],
+    //         bcc: ['jaysencarlo16@gmail.com'],
+    //         from: 'jaysencarlo14@gmail.com',
+    //         date: moment().subtract(9, 'days').toDate(),
+    //         subject: 'This is fourth for example only',
+    //         name: 'Carlo',
+    //         body: {
+    //             text: `bodybodybodybody`,
+    //             html: `<div dir="ltr">Body<div><br></div><div>Body<br></div><div><br></div><div>Body<br></div><div><br></div><div>Body<br></div></div>`,
+    //         },
+    //     });
+    //     await newInbox.save();
+    //     newInbox = new Inbox({
+    //         to: ['jaysencarlo13@gmail.com'],
+    //         cc: ['jaysencarlo15@gmail.com'],
+    //         bcc: ['jaysencarlo16@gmail.com'],
+    //         from: 'jaysencarlo14@gmail.com',
+    //         date: moment().subtract(9, 'days').toDate(),
+    //         subject: 'This is fourth for example only',
+    //         name: 'Magno',
+    //         body: {
+    //             text: `bodybodybodybody`,
+    //             html: `<div dir="ltr">Body<div><br></div><div>Body<br></div><div><br></div><div>Body<br></div><div><br></div><div>Body<br></div></div>`,
+    //         },
+    //     });
+    //     await newInbox.save();
+    // }
 });

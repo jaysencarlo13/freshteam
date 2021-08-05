@@ -1,0 +1,40 @@
+.applicant-manageaccount-wrapper {
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.applicant-personalinfo-header {
+    text-align: center;
+    font-size: larger;
+    font-weight: 800;
+}
+
+.applicant-personalinfo-body {
+    font-weight: 500;
+}
+
+.applicant {
+    margin: 10px;
+    border: 5px;
+}
+
+.applicant:hover {
+    background-color: #e5e4e2;
+    border: 5px solid #e5e4e2;
+    border-radius: 10px;
+}
+
+.applicant:hover .applicant-editicon {
+    display: block;
+}
+
+.applicant-editicon {
+    position: relative;
+    right: 0;
+    top: 0;
+    display: none;
+}
+
+.Toastify__toast--success {
+    background-color: green;
+}

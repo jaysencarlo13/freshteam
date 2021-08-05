@@ -65,7 +65,6 @@ export default function JobPost() {
                 if (res.data.isSuccess === true) {
                     const data = res.data.job_post;
                     const { title, range, type, created_by, editor } = data;
-                    console.log('useEffect success');
                     setState((prevState) => ({
                         ...prevState,
                         data: res.data.job_post,
@@ -78,12 +77,9 @@ export default function JobPost() {
                 } else if (res.data.isAuthenticated === false) {
                     <ServerAuth />;
                 } else if (res.data.isSuccess === false) {
-                    console.log(res);
                 }
             })
-            .catch((err) => {
-                console.log(err);
-            });
+            .catch((err) => {});
     }, [titleUpdate, rangeUpdate, typeUpdate, editorUpdate]);
 
     const onChange = (e) => {

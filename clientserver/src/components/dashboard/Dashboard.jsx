@@ -40,15 +40,13 @@ function Dashboard() {
                         return <Redirect path="/login" />;
                     }
                 })
-                .catch((err) => {
-                    console.log(err);
-                });
+                .catch((err) => {});
         }
     });
     if (!spin)
         return (
             <Contents>
-                <div className="gy-3">
+                <div className="gy-3" style={{ marginBottom: '100px' }}>
                     <div className="col-md-11">
                         <Card>
                             <Card.Header style={{ background: 'lightskyblue' }}>
