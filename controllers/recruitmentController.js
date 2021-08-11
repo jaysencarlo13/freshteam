@@ -118,10 +118,45 @@ exports.update = async (req, res, next) => {
     try {
         if (req.body) {
             const { user, status, candidate_id } = req.body;
-            const candidate = await Candidates.findByIdAndUpdate(candidate_id, { status: status });
-            res.json({ isSuccess: true, message: 'Success' });
+            const { organization_id } = await Organization_Members.findOne({ member_id: user._id });
+            if (status !== 'Hired') {
+                const candidate = await Candidates.findByIdAndUpdate(candidate_id, { status: status });
+                return res.json({ isSuccess: true, message: 'Success' });
+            } else if (status === 'Hired') {
+                //insert into users, update usertype into employee
+                const candidate = await Candidates.findById(candidate_id);
+                const applicant = await Applicants.findById(candidate.applicant_id);
+                const { personal_info, password } = applicant;
+                const { name, birthdate, home, email, contact } = personal_info;
+                const user_ = new User({
+                    name,
+                    email,
+                    birthdate,
+                    password,
+                    contact,
+                    home,
+                    user_type: 'employee',
+                    isCandidate: true,
+                });
+                await user_.save();
+                const organization_member = new Organization_Members({
+                    member_id: user_._id,
+                    organization_id,
+                });
+                await organization_member.save();
+                //delete this candidate and applicant
+                await Candidates.deleteMany({ applicant_id: applicant._id });
+                await Talentpool.deleteMany({ applicant_id: applicant._id });
+                await Applicants.findByIdAndDelete(applicant._id);
+                return res.json({
+                    isSuccess: true,
+                    message:
+                        'Candidate is now successfully Hired and is now transferred to employee section. Please inform the applicant to login in employee/employer login page. Thank you',
+                });
+            }
         }
     } catch (err) {
+        console.log(err);
         res.status(500).json({ error: err, message: 'Something Went Wrong' });
     }
 };

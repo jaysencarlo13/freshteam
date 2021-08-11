@@ -9,6 +9,7 @@ const {
     checkAuth,
     getMyInterviews,
     updateGoogle,
+    transfer,
 } = require('../controllers/dashboardController');
 const authMiddleware = require('../middleware/authMiddleware');
 
@@ -19,6 +20,7 @@ router.post('/userupdate', authMiddleware, updateUser);
 router.post('/changepassword', authMiddleware, changepassword);
 router.post('/fetchdashboard', authMiddleware, getMyInterviews);
 router.post('/user/update/google', authMiddleware, updateGoogle);
+router.post('/user/transfer/applicant', authMiddleware, transfer);
 router.post('/logout', authMiddleware, getLogout);
 
 module.exports = router;

@@ -1,4 +1,5 @@
 const { Schema, Types, model } = require('mongoose');
+const moment = require('moment');
 const organization_members_schema = new Schema(
     {
         member_id: {
@@ -11,9 +12,11 @@ const organization_members_schema = new Schema(
         },
         employee_id: {
             type: String,
+            default: '',
         },
         status: {
             type: String,
+            default: 'Active',
         },
         department: {
             type: String,
@@ -23,6 +26,11 @@ const organization_members_schema = new Schema(
         },
         join_date: {
             type: Date,
+            default: moment().toDate(),
+        },
+        timeoff: {
+            type: Number,
+            default: 12,
         },
     },
     {

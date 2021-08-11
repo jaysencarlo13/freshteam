@@ -1,0 +1,186 @@
+.jobpost {
+    border: 5px solid lightskyblue;
+    box-shadow: 5px 15px lightskyblue;
+    border-radius: 50px;
+    background-color: white;
+}
+
+/* title start */
+.jobpost-title {
+    text-align: center;
+}
+
+.jobpost-title h1 {
+    font-weight: 900;
+}
+
+.jobpost-title:hover {
+    background-color: #e5e4e2;
+    border: 5px solid e5e4e2;
+    border-radius: 50px;
+}
+
+.jobpost-title:hover .jobpost-title-editicon {
+    display: block;
+}
+
+.jobpost-title-editicon {
+    padding-left: 70px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    display: none;
+}
+
+/* Title end */
+
+.Toastify__toast--success {
+    background-color: green;
+}
+
+/* Range start*/
+.jobpost-range {
+    margin-top: 50px;
+}
+
+.jobpost-range:hover {
+    background-color: #e5e4e2;
+    border: 5px solid e5e4e2;
+    border-radius: 50px;
+}
+
+.jobpost-range:hover .jobpost-range-editicon {
+    display: block;
+}
+
+.jobpost-range-editicon {
+    padding-left: 70px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    display: none;
+}
+
+.jobpost-range span {
+    font-size: 22px;
+    font-weight: 900;
+}
+
+.jobpost-range p {
+    font-size: 22px;
+    font-weight: 400;
+    margin-left: 20px;
+}
+
+.jobpost-range-editmode {
+    margin-top: 50px;
+}
+
+.jobpost-range-editmode span {
+    font-size: 22px;
+    font-weight: 900;
+}
+
+/* Range end */
+
+/* Type start */
+
+.jobpost-type {
+    margin-top: 20px;
+}
+
+.jobpost-type:hover {
+    background-color: #e5e4e2;
+    border-radius: 50px;
+}
+
+.jobpost-type:hover .jobpost-type-editicon {
+    display: block;
+}
+
+.jobpost-type-editicon {
+    padding-left: 70px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    display: none;
+}
+
+.jobpost-type span {
+    font-size: 22px;
+    font-weight: 900;
+}
+
+.jobpost-type p {
+    font-size: 22px;
+    font-weight: 400;
+    margin-left: 20px;
+}
+
+.jobpost-type-editmode {
+    margin-top: 20px;
+}
+
+.jobpost-type-editmode span {
+    font-size: 22px;
+    font-weight: 900;
+}
+
+/* Type End */
+
+/* created-by start */
+
+.jobpost-created-by {
+    margin-top: 20px;
+}
+
+.jobpost-created-by span {
+    font-size: 22px;
+    font-weight: 900;
+}
+
+.jobpost-created-by p {
+    font-size: 22px;
+    font-weight: 400;
+    margin-left: 20px;
+}
+
+/* created-by end */
+
+/* Job Post Editor Start */
+
+.jobpost-editor {
+    margin-top: 20px;
+}
+
+.jobpost-editor:hover {
+    background-color: #e5e4e2;
+    border-radius: 20px;
+}
+
+.jobpost-editor:hover .jobpost-editor-editicon {
+    display: block;
+}
+
+.jobpost-editor-editicon {
+    padding-left: 70px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    display: none;
+}
+.toolbarClassName {
+    z-index: 0;
+}
+.wrapperClassName {
+    z-index: 0;
+    border: 2px solid black;
+    border-radius: 10px;
+}
+.editorClassName {
+    z-index: 0;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+/* Job Post Editor End */

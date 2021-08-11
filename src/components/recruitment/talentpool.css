@@ -1,0 +1,21 @@
+.talentpool-search {
+    margin-top: 40px;
+}
+
+.talentpool-table {
+    width: 95%;
+    text-align: center;
+}
+
+.talentpool-table-actions-buttons {
+    width: 70px;
+}
+
+.talentpool-modalbody-view {
+    overflow-y: scroll;
+    max-height: 76vh;
+}
+
+.Toastify__toast--success {
+    background-color: green;
+}

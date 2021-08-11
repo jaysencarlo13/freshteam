@@ -31,6 +31,17 @@ exports.applicantRegister = async (req, res, next) => {
     try {
         if (req.body) {
             const { name, email, birthdate, password } = req.body;
+
+            const check1 = await User.find({ email });
+
+            if (check1.length !== 0)
+                return res
+                    .status(500)
+                    .json({
+                        message:
+                            'User is already employed. To become an applicant, login in employee/employer and change the status to applicant',
+                    });
+
             const user = new Applicant({
                 'personal_info.name': name,
                 'personal_info.email': email,

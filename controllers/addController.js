@@ -23,7 +23,7 @@ exports.add_employee = async (req, res, next) => {
         if (req.body) {
             const { user, employee_email } = req.body;
             const thisuser = await Organization_Members.findOne({ member_id: user._id });
-            const user_to_be_add = await Users.findOne({ email: employee_email });
+            let user_to_be_add = await Users.findOne({ email: employee_email });
             if (!user_to_be_add)
                 return res.json({
                     isSuccess: false,
@@ -51,7 +51,7 @@ exports.add_employee = async (req, res, next) => {
                     message: 'User is in different organization',
                 });
             }
-
+            await Users.findByIdAndUpdate(user_to_be_add._id, { user_type: 'employee' });
             const newuser = new Organization_Members({
                 organization_id: thisuser.organization_id,
                 member_id: user_to_be_add._id,

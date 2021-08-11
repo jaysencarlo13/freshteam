@@ -23,42 +23,68 @@ exports.postDashboard = async (req, res, next) => {};
 exports.getUser = async (req, res, next) => {
     try {
         const { user } = req.body;
-        const { name, email, birthdate, home, contact } = await User.findById(user._id);
-        const { employee_id, status, department, title, join_date } = await Organization_Members.findOne({
+        const user_ = await User.findById(user._id);
+        const { name, email, birthdate, home, contact } = user_;
+        const organization_member = await Organization_Members.findOne({
             member_id: user._id,
         });
-        return res.json({
-            user: {
-                personal_info: {
-                    name,
-                    email,
-                    birthdate,
-                    home,
-                    contact,
+        if (organization_member && organization_member.length) {
+            const { employee_id, status, department, title, join_date } = organization_member;
+            return res.json({
+                user: {
+                    personal_info: {
+                        name,
+                        email,
+                        birthdate,
+                        home,
+                        contact,
+                    },
+                    work_info: {
+                        employee_id,
+                        status,
+                        department,
+                        title,
+                        join_date,
+                    },
                 },
-                work_info: {
-                    employee_id,
-                    status,
-                    department,
-                    title,
-                    join_date,
+            });
+        } else
+            return res.json({
+                user: {
+                    personal_info: {
+                        name,
+                        email,
+                        birthdate,
+                        home,
+                        contact,
+                    },
+                    work_info: {
+                        employee_id: '',
+                        status: '',
+                        department: '',
+                        title: '',
+                        join_date: '',
+                    },
                 },
-            },
-        });
+            });
     } catch (err) {
+        console.log(err);
         res.status(500).json({ error: err, message: 'Something went wrong' });
     }
 };
 
 exports.getLogout = async (req, res, next) => {
+    console.log('here');
     try {
         const { sessionID } = req.body;
         if (sessionID) {
+            console.log('here');
             req.logout();
             await Session.findByIdAndDelete(sessionID);
             res.json({ isLogout: true, message: 'Success' });
         }
     } catch (err) {
+        console.log(err);
         res.status(500).json({ error: err, message: 'Something went wrong!' });
     }
 };
@@ -216,6 +242,7 @@ exports.getMyInterviews = async (req, res, next) => {
                 });
             }
             if (myReferrals_candidate.length || myReferrals_talentpool.length) {
+                console.log(myReferrals_candidate);
                 if (myReferrals_candidate.length)
                     myReferrals_candidate.forEach((element) => {
                         const { applicant_id, date_applied, status, job_posting_id } = element;
@@ -283,6 +310,7 @@ exports.getMyInterviews = async (req, res, next) => {
             });
         }
     } catch (err) {
+        console.log(err);
         res.status(500).json({ error: err, message: 'Something Went Wrong' });
     }
 };
@@ -301,5 +329,35 @@ exports.updateGoogle = async (req, res, next) => {
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: err, message: 'Something Went Wrong' });
+    }
+};
+
+exports.transfer = async (req, res, next) => {
+    try {
+        if (req.body) {
+            const { user } = req.body;
+            const { _id, name, email, birthdate, password, contact, home } = await User.findById(user._id);
+            const applicant = new Applicants({
+                personal_info: {
+                    name,
+                    birthdate,
+                    home,
+                    email,
+                    contact,
+                },
+                password,
+                isTransfer: true,
+            });
+            await applicant.save();
+            await Organization_Members.deleteMany({ member_id: _id });
+            await User.findByIdAndDelete(_id);
+            return res.json({
+                isSuccess: true,
+                message:
+                    'Success Transfering this account to applicant. Please logout and login in applicants login page. Thank you',
+            });
+        }
+    } catch (err) {
+        return res.status(500).json({ error: err, message: 'Transfering Failed. Something Went Wrong' });
     }
 };

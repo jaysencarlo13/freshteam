@@ -43,6 +43,10 @@ const userSchema = new Schema({
             default: '',
         },
     },
+    isCandidate: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 userSchema.pre('save', async function (next) {
@@ -57,8 +61,17 @@ userSchema.pre('save', async function (next) {
 });
 
 userSchema.pre('save', async function (next) {
-    if (!this.isModified('password')) next();
+    if (this.isCandidate) return next();
+    if (!this.isModified('password')) return next();
     this.password = await bcrypt.hash(this.password, 15);
+    return next();
+});
+
+userSchema.post('save', async function (doc, next) {
+    if (this.isCandidate) {
+        doc.isCandidate = false;
+        await doc.save();
+    }
     return next();
 });
 

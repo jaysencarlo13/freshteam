@@ -115,6 +115,10 @@ const applicantSchema = new Schema(
             type: String,
             required: true,
         },
+        isTransfer: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         collection: 'applicant',
@@ -123,8 +127,17 @@ const applicantSchema = new Schema(
 );
 
 applicantSchema.pre('save', async function (next) {
-    if (!this.isModified('password')) next();
+    if (this.isTransfer) return next();
+    if (!this.isModified('password')) return next();
     this.password = await bcrypt.hash(this.password, 15);
+    return next();
+});
+
+applicantSchema.post('save', async function (doc, next) {
+    if (this.isTransfer) {
+        doc.isTransfer = false;
+        await doc.save();
+    }
     return next();
 });
 

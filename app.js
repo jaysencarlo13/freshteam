@@ -57,6 +57,9 @@ app.use('/api/add', require('./routes/addRoutes'));
 app.use('/api/recruitment', require('./routes/recruitmentRoutes'));
 app.use('/api/jobpost', require('./routes/jobpostRoutes'));
 app.use('/api/inbox', require('./routes/inboxRoutes'));
+app.use('/api/settings', require('./routes/settingsRoutes'));
+app.use('/api/employees', require('./routes/employeeRoutes'));
+app.use('/api/timeoff', require('./routes/timeoffRoutes'));
 
 app.listen(3001, async (err) => {
     if (err) throw err;
@@ -150,7 +153,7 @@ app.listen(3001, async (err) => {
             organization_id: '60f1d510429ab43a547d8a79',
             employee_id: 'E0001',
             department: 'Software',
-            title: 'Manager',
+            title: 'Owner',
             join_date: moment().subtract(2, 'years'),
         });
         await organization_member.save();
