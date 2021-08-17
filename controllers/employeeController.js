@@ -64,7 +64,6 @@ exports.employees = async (req, res, next) => {
             return res.json({ isSuccess: true, table: array });
         }
     } catch (err) {
-        console.log(err);
         res.status(500).json({ error: err, message: 'Something went Wrong!' });
     }
 };

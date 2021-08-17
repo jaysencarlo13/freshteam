@@ -1,28 +1,55 @@
 import queryString from 'query-string';
 import Nav from './Nav';
-import { InputGroup, FormControl, Card, Button } from 'react-bootstrap';
+import { InputGroup, FormControl, Card, Button, Alert } from 'react-bootstrap';
 import { useEffect, useState } from 'react';
 import Spinner from '../container/Spinner';
 import { EditorState, convertFromRaw, convertToRaw } from 'draft-js';
 import draftToHtml from 'draftjs-to-html';
 import Parser from 'html-react-parser';
 import axios from 'axios';
+import { ServerAuth } from '../../Auth';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function Applicant() {
+    const ticket = JSON.parse(localStorage.getItem('data'));
     const { postid } = queryString.parse(window.location.search);
     const [jobpost, setJobPost] = useState(undefined);
     const [search, setSearch] = useState('');
     const [spin, setSpin] = useState(true);
     const [spin2, setSpin2] = useState(false);
     const [fulldetails, setFullDetails] = useState(undefined);
+    const [applicantDetails, setApplicantDetails] = useState(undefined);
 
     useEffect(() => {
-        axios.get('/api/jobpost/fetch?search=' + search).then((res) => {
-            if (res.data.isSuccess === true) {
-                setJobPost(res.data.jobpost);
+        axios
+            .get('/api/jobpost/fetch?search=' + search)
+            .then((res) => {
+                if (res.data.isSuccess === true) {
+                    if (res.data.jobpost.length === 0) {
+                        setJobPost(undefined);
+                        setSpin(false);
+                    } else {
+                        setJobPost(res.data.jobpost);
+                        setSpin(false);
+                    }
+                }
+            })
+            .catch((err) => {
                 setSpin(false);
-            }
-        });
+            });
+        if (!applicantDetails) {
+            axios
+                .post('/api/applicant', { ...ticket })
+                .then((res) => {
+                    if (res.data.isSuccess === true) {
+                        setApplicantDetails(res.data.applicant);
+                    } else if (res.data.isAuthenticated === false) {
+                        <ServerAuth />;
+                    }
+                })
+                .catch((err) => {});
+        }
     }, [search]);
 
     const searchChange = (e) => {
@@ -45,9 +72,35 @@ export default function Applicant() {
             }
         });
     };
+
+    const handleApply = (e, details) => {
+        console.log(details);
+        setSpin2(true);
+        axios
+            .post('/api/applicant/apply', { ...ticket, post_id: details._id })
+            .then((res) => {
+                if (res.data.isSuccess === true) {
+                    toast.success(res.data.message, {
+                        position: toast.POSITION.TOP_LEFT,
+                        autoClose: 3000,
+                    });
+                    setSpin2(false);
+                } else if (res.data.isAuthenticated === false) {
+                    <ServerAuth />;
+                }
+            })
+            .catch((err) => {
+                toast.success(err.response.data.message, {
+                    position: toast.POSITION.TOP_LEFT,
+                    autoClose: 3000,
+                });
+                setSpin2(false);
+            });
+    };
+
     return (
         <div>
-            <Nav name={'Jaysen'} />
+            {applicantDetails ? <Nav name={applicantDetails.personal_info.name} /> : ''}
             <div className="row homepage">
                 <div className="col-md-8">
                     <div className="col-md-12 homepage-search">
@@ -69,44 +122,46 @@ export default function Applicant() {
                             <div className="col-md-5">
                                 {!spin ? (
                                     <div>
-                                        {jobpost
-                                            ? jobpost.map(
-                                                  ({
-                                                      _id,
-                                                      title,
-                                                      range,
-                                                      type,
-                                                      name,
-                                                      description,
-                                                      headquarters,
-                                                      industry,
-                                                  }) => {
-                                                      return (
-                                                          <Card
-                                                              key={_id}
-                                                              border="primary"
-                                                              style={{ width: '100%', marginBottom: '40px' }}
-                                                              className="btn homepage-card-briefdetails"
-                                                              onClick={() => onClickDetails(_id)}
-                                                          >
-                                                              <Card.Header className="homepage-jobpost-header">
-                                                                  {title}
-                                                              </Card.Header>
-                                                              <Card.Body>
-                                                                  <Card.Title className="homepage-jobpost-title">
-                                                                      {name}
-                                                                  </Card.Title>
-                                                                  <h6>
-                                                                      {headquarters}/ {industry}
-                                                                  </h6>
-                                                                  <Card.Subtitle>{range}</Card.Subtitle>
-                                                                  <Card.Subtitle>{type}</Card.Subtitle>
-                                                              </Card.Body>
-                                                          </Card>
-                                                      );
-                                                  }
-                                              )
-                                            : 'No Job Post'}
+                                        {jobpost ? (
+                                            jobpost.map(
+                                                ({
+                                                    _id,
+                                                    title,
+                                                    range,
+                                                    type,
+                                                    name,
+                                                    description,
+                                                    headquarters,
+                                                    industry,
+                                                }) => {
+                                                    return (
+                                                        <Card
+                                                            key={_id}
+                                                            border="primary"
+                                                            style={{ width: '100%', marginBottom: '40px' }}
+                                                            className="btn homepage-card-briefdetails"
+                                                            onClick={() => onClickDetails(_id)}
+                                                        >
+                                                            <Card.Header className="homepage-jobpost-header">
+                                                                {title}
+                                                            </Card.Header>
+                                                            <Card.Body>
+                                                                <Card.Title className="homepage-jobpost-title">
+                                                                    {name}
+                                                                </Card.Title>
+                                                                <h6>
+                                                                    {headquarters}/ {industry}
+                                                                </h6>
+                                                                <Card.Subtitle>{range}</Card.Subtitle>
+                                                                <Card.Subtitle>{type}</Card.Subtitle>
+                                                            </Card.Body>
+                                                        </Card>
+                                                    );
+                                                }
+                                            )
+                                        ) : (
+                                            <Alert variant="danger">No Results Found</Alert>
+                                        )}
                                     </div>
                                 ) : (
                                     <Spinner />
@@ -128,14 +183,17 @@ export default function Applicant() {
                                                 <Button
                                                     variant="primary"
                                                     size="lg"
-                                                    href={'/login_applicant?postid=' + fulldetails._id}
+                                                    onClick={(e) => handleApply(e, fulldetails)}
                                                 >
                                                     Apply Now
                                                 </Button>
                                                 <hr />
                                                 <div className="homepage-about-us">
                                                     <h4>About Us</h4>
-                                                    {fulldetails.description} <hr />
+                                                    <div style={{ whiteSpace: 'pre-wrap' }}>
+                                                        {fulldetails.description}
+                                                    </div>
+                                                    <hr />
                                                     <div className="homepage-editor">
                                                         {Parser(
                                                             draftToHtml(

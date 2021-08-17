@@ -32,7 +32,6 @@ export default function Employees() {
     const [{ spin, table, search, category, show, view, menubar, update }, setState] = useState(initialState);
 
     useEffect(() => {
-        console.log(menubar);
         if (menubar === 'directories')
             axios
                 .post('/api/employees', { ...ticket, search, category })

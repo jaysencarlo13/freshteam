@@ -16,7 +16,7 @@ export default function CertificationLicenses({ certification_licenses, callback
 
     const initialState = {
         title: '',
-        does_expire: false,
+        does_expire: true,
         from: moment().format('YYYY-MM-DD'),
         to: moment().format('YYYY-MM-DD'),
         array: certification_licenses ? certification_licenses : [],
@@ -26,7 +26,7 @@ export default function CertificationLicenses({ certification_licenses, callback
         spinDelete: false,
         id_edit: '',
         title_edit: '',
-        does_expire_edit: false,
+        does_expire_edit: true,
         from_edit: moment().format('YYYY-MM-DD'),
         to_edit: moment().format('YYYY-MM-DD'),
     };
@@ -78,7 +78,7 @@ export default function CertificationLicenses({ certification_licenses, callback
             type: 'date',
             value: to,
             label: 'To',
-            readOnly: false,
+            readOnly: !does_expire,
         },
     ];
 
@@ -100,16 +100,16 @@ export default function CertificationLicenses({ certification_licenses, callback
         {
             name: 'from_edit',
             type: 'date',
-            value: from_edit,
+            value: moment(from_edit).format('YYYY-MM-DD'),
             label: 'From',
             readOnly: false,
         },
         {
             name: 'to_edit',
             type: 'date',
-            value: to_edit,
+            value: moment(to_edit).format('YYYY-MM-DD'),
             label: 'To',
-            readOnly: false,
+            readOnly: !does_expire_edit,
         },
     ];
 
@@ -119,6 +119,8 @@ export default function CertificationLicenses({ certification_licenses, callback
 
     const handleChange = (e) => {
         let { name, value } = e.target;
+        if (name === 'does_expire_edit') value = !does_expire_edit;
+        if (name === 'does_expire') value = !does_expire;
         setState((prevState) => ({ ...prevState, [name]: value }));
     };
 
@@ -181,9 +183,9 @@ export default function CertificationLicenses({ certification_licenses, callback
                     id: id_edit,
                     title: title_edit,
                     time_period: {
-                        does_expire_edit,
-                        from_edit,
-                        to_edit,
+                        does_expire: does_expire_edit,
+                        from: from_edit,
+                        to: to_edit,
                     },
                 },
             })
@@ -258,8 +260,216 @@ export default function CertificationLicenses({ certification_licenses, callback
 
     return (
         <Card className="mb-3">
-            <Card.Header className="applicant-personalinfo-header">Skills</Card.Header>
-            <Card.Body className="applicant-personalinfo-body"></Card.Body>
+            <Card.Header className="applicant-personalinfo-header">Certification And Licenses</Card.Header>
+            <Card.Body className="applicant-personalinfo-body">
+                {!isAdd ? (
+                    <Button className="mb-3" onClick={handleAdd} variant="success">
+                        Add new
+                    </Button>
+                ) : (
+                    <div className="mb-3">
+                        {spinAdd ? (
+                            <Spinner />
+                        ) : (
+                            <ButtonGroup className="mb-3">
+                                <Button variant="success" onClick={handleSave}>
+                                    Save
+                                </Button>
+                                <Button variant="danger" onClick={handleCancel}>
+                                    Cancel
+                                </Button>
+                            </ButtonGroup>
+                        )}
+
+                        <div className="row ">
+                            {arrayAdd.map(({ name, type, value, label, readOnly }, index) => {
+                                return (
+                                    <div className="col-6">
+                                        <InputGroup className="mb-3" key={index}>
+                                            {type === 'checkbox' ? (
+                                                <>
+                                                    <InputGroup.Text>{label}</InputGroup.Text>
+                                                    <InputGroup.Checkbox
+                                                        value={value}
+                                                        name={name}
+                                                        readOnly={readOnly}
+                                                        onChange={handleChange}
+                                                        checked={value}
+                                                    />
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <InputGroup.Text>{label}</InputGroup.Text>
+                                                    <FormControl
+                                                        name={name}
+                                                        value={value}
+                                                        type={type}
+                                                        readOnly={readOnly}
+                                                        onChange={handleChange}
+                                                    />
+                                                </>
+                                            )}
+                                        </InputGroup>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+                {array.map(({ _id, title, time_period }) => {
+                    return (
+                        <Accordion className="mb-3" key={_id}>
+                            <AccordionSummary
+                                className="applicant-workExperience-accordion-summary"
+                                expandIcon={<ExpandMore />}
+                                style={{ backgroundColor: '#f5f5f5' }}
+                            >
+                                <h4>{title}</h4>
+                            </AccordionSummary>
+                            {id_edit !== _id ? (
+                                <AccordionDetails>
+                                    <div className="row">
+                                        <div className="col-12 mb-3">
+                                            {spinDelete ? (
+                                                <Spinner />
+                                            ) : (
+                                                <ButtonGroup>
+                                                    <Button
+                                                        variant="success"
+                                                        onClick={(e) => handleEdit(e, _id)}
+                                                    >
+                                                        Edit
+                                                    </Button>
+                                                    <Button
+                                                        variant="danger"
+                                                        onClick={(e) => handleDelete(e, _id)}
+                                                    >
+                                                        Delete
+                                                    </Button>
+                                                </ButtonGroup>
+                                            )}
+                                        </div>
+
+                                        {[
+                                            {
+                                                type: 'text',
+                                                label: 'Title',
+                                                readOnly: true,
+                                                value: title,
+                                            },
+                                            {
+                                                type: 'checkbox',
+                                                label: 'Does Expire ?',
+                                                readOnly: true,
+                                                value: time_period.does_expire,
+                                            },
+                                            {
+                                                type: 'date',
+                                                label: 'From',
+                                                readOnly: true,
+                                                value: moment(time_period.from).format('YYYY-MM-DD'),
+                                            },
+                                            {
+                                                type: 'date',
+                                                label: 'To',
+                                                readOnly: true,
+                                                value: moment(time_period.to).format('YYYY-MM-DD'),
+                                            },
+                                        ].map(({ type, label, readOnly, value }, index) => {
+                                            {
+                                                return (
+                                                    <div className="col-6" key={index}>
+                                                        <InputGroup className="mb-3">
+                                                            {type === 'checkbox' ? (
+                                                                <>
+                                                                    <InputGroup.Text>{label}</InputGroup.Text>
+                                                                    <InputGroup.Checkbox
+                                                                        value={value}
+                                                                        readOnly={readOnly}
+                                                                        checked={value}
+                                                                    />
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <InputGroup.Text>{label}</InputGroup.Text>
+                                                                    <FormControl
+                                                                        value={value}
+                                                                        type={type}
+                                                                        readOnly={readOnly}
+                                                                    />
+                                                                </>
+                                                            )}
+                                                        </InputGroup>
+                                                    </div>
+                                                );
+                                            }
+                                        })}
+                                    </div>
+                                </AccordionDetails>
+                            ) : (
+                                <AccordionDetails>
+                                    <div className="row">
+                                        <div className="col-12 mb-3">
+                                            {spinEdit ? (
+                                                <Spinner />
+                                            ) : (
+                                                <ButtonGroup aria-label="Basic example">
+                                                    <Button variant="success" onClick={handleSave_edit}>
+                                                        Save
+                                                    </Button>
+                                                    <Button variant="danger" onClick={handleCancel}>
+                                                        Cancel
+                                                    </Button>
+                                                </ButtonGroup>
+                                            )}
+                                        </div>
+
+                                        {arrayEdit.map(
+                                            ({ _id, name, type, label, readOnly, value }, index) => {
+                                                {
+                                                    return (
+                                                        <div className="col-6" key={index}>
+                                                            <InputGroup className="mb-3">
+                                                                {type === 'checkbox' ? (
+                                                                    <>
+                                                                        <InputGroup.Text>
+                                                                            {label}
+                                                                        </InputGroup.Text>
+                                                                        <InputGroup.Checkbox
+                                                                            value={value}
+                                                                            readOnly={readOnly}
+                                                                            name={name}
+                                                                            checked={value}
+                                                                            onChange={handleChange}
+                                                                        />
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <InputGroup.Text>
+                                                                            {label}
+                                                                        </InputGroup.Text>
+                                                                        <FormControl
+                                                                            value={value}
+                                                                            type={type}
+                                                                            name={name}
+                                                                            readOnly={readOnly}
+                                                                            onChange={handleChange}
+                                                                        />
+                                                                    </>
+                                                                )}
+                                                            </InputGroup>
+                                                        </div>
+                                                    );
+                                                }
+                                            }
+                                        )}
+                                    </div>
+                                </AccordionDetails>
+                            )}
+                        </Accordion>
+                    );
+                })}
+            </Card.Body>
         </Card>
     );
 }

@@ -1,4 +1,5 @@
 const { Schema, model, Types } = require('mongoose');
+const moment = require('moment');
 
 const talentpoolSchema = new Schema(
     {
@@ -12,7 +13,7 @@ const talentpoolSchema = new Schema(
         },
         date_applied: {
             type: Date,
-            required: true,
+            default: moment(),
         },
         referred_by: {
             type: String,

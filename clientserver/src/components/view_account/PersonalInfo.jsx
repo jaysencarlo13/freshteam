@@ -3,7 +3,6 @@ import Paragraph from './Paragraph';
 import moment from 'moment';
 
 export default function PersonalInfo({ data }) {
-    console.log(data.birthdate);
     let array_fields = [];
     if (data) {
         array_fields = [

@@ -120,6 +120,7 @@ export default function WorkExperience({ work_experience, callback }) {
     const handleChange = (e) => {
         let { name, value } = e.target;
         if (name === 'currently_working') value = !currently_working;
+        if (name === 'currently_working_edit') value = !currently_working_edit;
         setState((prevState) => ({ ...prevState, [name]: value }));
     };
 

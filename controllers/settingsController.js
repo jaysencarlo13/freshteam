@@ -50,10 +50,8 @@ exports.update = async (req, res, next) => {
         if (req.body) {
             const { user, data } = req.body;
             const { id, role } = data;
-            const thisuser = await Users.findById(user._id);
-            thisuser.user_type = role;
-            await thisuser.save();
-            res.json({ isSuccess: true, message: 'Success' });
+            await Users.findByIdAndUpdate(id, { user_type: role });
+            return res.json({ isSuccess: true, message: 'Success' });
         }
     } catch (err) {
         return res.status(500).json({ error: err, message: 'Something Went Wrong' });

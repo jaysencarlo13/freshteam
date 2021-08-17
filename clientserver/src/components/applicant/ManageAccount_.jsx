@@ -71,7 +71,6 @@ export default function ManageAccount() {
         e.preventDefault();
         const { value } = e.target;
         const { variable } = data;
-        console.log(variable, value);
         setState((prevState) => ({ ...prevState, [variable]: value }));
     };
 

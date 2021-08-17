@@ -34,12 +34,6 @@ export default function Compose({ email }) {
     };
 
     const handleSend = () => {
-        console.log('subject', subject);
-        console.log('from', email);
-        console.log('to', to);
-        console.log('cc', cc);
-        console.log('bcc', bcc);
-        console.log('editor', editor);
         setSpin2(true);
 
         let arrayTo = [],
@@ -137,7 +131,6 @@ export default function Compose({ email }) {
             .post('/api/inbox/search', { ...ticket, search })
             .then((res) => {
                 if (res.data.isSuccess === true) {
-                    console.log(res.data);
                     setSuggestions(res.data.suggestions);
                     setSpin(false);
                 } else if (res.data.isAuthenticated === false) {

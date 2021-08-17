@@ -20,6 +20,7 @@ import Inbox from './components/inbox/Inbox';
 import Settings from './components/settings/Settings';
 import Employees from './components/employees/Employees';
 import Timeoff from './components/timeoff/Timeoff';
+import Reports from './components/reports/Reports';
 
 function App() {
     return (
@@ -97,6 +98,11 @@ function App() {
                     <Auth />
                     <CheckRole />
                     <Timeoff />
+                </Route>
+                <Route exact path="/reports">
+                    <Auth />
+                    <CheckRole />
+                    <Reports />
                 </Route>
                 <Route exact path="/logout">
                     <Auth />

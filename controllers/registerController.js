@@ -6,6 +6,21 @@ exports.postRegister = async (req, res, next) => {
     try {
         if (req.body) {
             const { name, email, birthdate, password } = req.body;
+
+            const check_user = await User.find({ email });
+            if (check_user.length !== 0)
+                return res.status(500).json({
+                    error: 'User is Already Registered',
+                    message: 'User is Already Registered',
+                });
+
+            const check_applicant = await Applicant.find({ 'personal_info.email': email });
+            if (check_applicant.length !== 0)
+                return res.status(500).json({
+                    error: 'User is already registered as applicant.',
+                    message: 'User is already registered as applicant',
+                });
+
             const user = new User({
                 name: name,
                 email: email,
@@ -32,15 +47,19 @@ exports.applicantRegister = async (req, res, next) => {
         if (req.body) {
             const { name, email, birthdate, password } = req.body;
 
-            const check1 = await User.find({ email });
+            const check_user = await User.find({ email });
+            if (check_user.length !== 0)
+                return res.status(500).json({
+                    error: 'User is Already Registered as Employee',
+                    message: 'User is Already Registered as Employee',
+                });
 
-            if (check1.length !== 0)
-                return res
-                    .status(500)
-                    .json({
-                        message:
-                            'User is already employed. To become an applicant, login in employee/employer and change the status to applicant',
-                    });
+            const check_applicant = await Applicant.find({ 'personal_info.email': email });
+            if (check_applicant.length !== 0)
+                return res.status(500).json({
+                    error: 'User is already registered.',
+                    message: 'User is already registered',
+                });
 
             const user = new Applicant({
                 'personal_info.name': name,

@@ -1,6 +1,6 @@
 import Nav from './Nav';
 import './homepage.css';
-import { InputGroup, FormControl, Card, Button } from 'react-bootstrap';
+import { InputGroup, FormControl, Card, Button, Alert } from 'react-bootstrap';
 import { useEffect, useState } from 'react';
 import Spinner from '../container/Spinner';
 import axios from 'axios';
@@ -19,10 +19,14 @@ export default function Homepage() {
 
     useEffect(() => {
         axios.get('/api/jobpost/fetch?search=' + search).then((res) => {
-            console.log(res);
             if (res.data.isSuccess === true) {
-                setJobPost(res.data.jobpost);
-                setSpin(false);
+                if (res.data.jobpost.length === 0) {
+                    setJobPost(undefined);
+                    setSpin(false);
+                } else {
+                    setJobPost(res.data.jobpost);
+                    setSpin(false);
+                }
             }
         });
     }, [search]);
@@ -72,44 +76,46 @@ export default function Homepage() {
                             <div className="col-md-5">
                                 {!spin ? (
                                     <div>
-                                        {jobpost
-                                            ? jobpost.map(
-                                                  ({
-                                                      _id,
-                                                      title,
-                                                      range,
-                                                      type,
-                                                      name,
-                                                      description,
-                                                      headquarters,
-                                                      industry,
-                                                  }) => {
-                                                      return (
-                                                          <Card
-                                                              key={_id}
-                                                              border="primary"
-                                                              style={{ width: '100%', marginBottom: '40px' }}
-                                                              className="btn homepage-card-briefdetails"
-                                                              onClick={() => onClickDetails(_id)}
-                                                          >
-                                                              <Card.Header className="homepage-jobpost-header">
-                                                                  {title}
-                                                              </Card.Header>
-                                                              <Card.Body>
-                                                                  <Card.Title className="homepage-jobpost-title">
-                                                                      {name}
-                                                                  </Card.Title>
-                                                                  <h6>
-                                                                      {headquarters}/ {industry}
-                                                                  </h6>
-                                                                  <Card.Subtitle>{range}</Card.Subtitle>
-                                                                  <Card.Subtitle>{type}</Card.Subtitle>
-                                                              </Card.Body>
-                                                          </Card>
-                                                      );
-                                                  }
-                                              )
-                                            : 'No Job Post'}
+                                        {jobpost ? (
+                                            jobpost.map(
+                                                ({
+                                                    _id,
+                                                    title,
+                                                    range,
+                                                    type,
+                                                    name,
+                                                    description,
+                                                    headquarters,
+                                                    industry,
+                                                }) => {
+                                                    return (
+                                                        <Card
+                                                            key={_id}
+                                                            border="primary"
+                                                            style={{ width: '100%', marginBottom: '40px' }}
+                                                            className="btn homepage-card-briefdetails"
+                                                            onClick={() => onClickDetails(_id)}
+                                                        >
+                                                            <Card.Header className="homepage-jobpost-header">
+                                                                {title}
+                                                            </Card.Header>
+                                                            <Card.Body>
+                                                                <Card.Title className="homepage-jobpost-title">
+                                                                    {name}
+                                                                </Card.Title>
+                                                                <h6>
+                                                                    {headquarters}/ {industry}
+                                                                </h6>
+                                                                <Card.Subtitle>{range}</Card.Subtitle>
+                                                                <Card.Subtitle>{type}</Card.Subtitle>
+                                                            </Card.Body>
+                                                        </Card>
+                                                    );
+                                                }
+                                            )
+                                        ) : (
+                                            <Alert variant="danger">No Results Found</Alert>
+                                        )}
                                     </div>
                                 ) : (
                                     <Spinner />
@@ -138,7 +144,10 @@ export default function Homepage() {
                                                 <hr />
                                                 <div className="homepage-about-us">
                                                     <h4>About Us</h4>
-                                                    {fulldetails.description} <hr />
+                                                    <div style={{ whiteSpace: 'pre-wrap' }}>
+                                                        {fulldetails.description}
+                                                    </div>
+                                                    <hr />
                                                     <div className="homepage-editor">
                                                         {Parser(
                                                             draftToHtml(

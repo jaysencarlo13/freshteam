@@ -60,59 +60,12 @@ export default function TalentPoolTable({ data_table, modal_view, action_add, ac
 
     const handleAdd = (e, data) => {
         e.preventDefault();
-
-        confirmAlert({
-            customUI: ({ onClose }) => {
-                return (
-                    <div className="custom-ui">
-                        <h6>
-                            Are you sure you want to add <b>{data['personal_info']['name']}</b>
-                        </h6>
-                        <hr />
-                        <Button variant="info" onClick={() => onClose()}>
-                            No
-                        </Button>
-                        <Button
-                            variant="success"
-                            onClick={(e) => {
-                                action_add(data);
-                                onClose();
-                            }}
-                        >
-                            Add
-                        </Button>
-                    </div>
-                );
-            },
-        });
+        action_add(data);
     };
 
     const handleRemove = (e, data) => {
         e.preventDefault();
-        confirmAlert({
-            customUI: ({ onClose }) => {
-                return (
-                    <div className="custom-ui">
-                        <h6>
-                            Are you sure you want to remove <b>{data['personal_info']['name']}</b>
-                        </h6>
-                        <hr />
-                        <Button variant="info" onClick={() => onClose()}>
-                            No
-                        </Button>
-                        <Button
-                            variant="danger"
-                            onClick={(e) => {
-                                action_remove(data);
-                                onClose();
-                            }}
-                        >
-                            Remove
-                        </Button>
-                    </div>
-                );
-            },
-        });
+        action_remove(data);
     };
 
     return (

@@ -12,6 +12,9 @@ import PersonalInfo from './PersonalInfo';
 import WorkExperience from './WorkExperience';
 import Education from './Education';
 import Skills from './Skills';
+import CertLicence from './CertificationLicenses';
+import AddInfo from './AddInfo';
+import File from './File';
 
 export default function ManageAccount() {
     const ticket = JSON.parse(localStorage.getItem('data'));
@@ -50,7 +53,7 @@ export default function ManageAccount() {
                             <Spinner />
                         ) : (
                             <div>
-                                {/* <File /> */}
+                                <File file_={applicant['file']} callback={handleReload} />
                                 <PersonalInfo
                                     personal_info={applicant['personal_info']}
                                     callback={handleReload}
@@ -61,8 +64,14 @@ export default function ManageAccount() {
                                 />
                                 <Education education={applicant['education']} callback={handleReload} />
                                 <Skills skills={applicant['skills']} callback={handleReload} />
-                                {/* <CertLicence /> */}
-                                {/* <AddInfo /> */}
+                                <CertLicence
+                                    certification_licenses={applicant['certification_licenses']}
+                                    callback={handleReload}
+                                />
+                                <AddInfo
+                                    additional_information={applicant['additional_information']}
+                                    callback={handleReload}
+                                />
                             </div>
                         )}
                     </div>

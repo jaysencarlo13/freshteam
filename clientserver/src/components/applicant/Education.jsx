@@ -127,7 +127,7 @@ export default function Education({ education, callback }) {
             type: 'date',
             value: to_edit,
             label: 'To',
-            readOnly: currently_enrolled_edit === true ? true : false,
+            readOnly: currently_enrolled_edit,
         },
     ];
 
@@ -138,6 +138,7 @@ export default function Education({ education, callback }) {
     const handleChange = (e) => {
         let { name, value } = e.target;
         if (name === 'currently_enrolled') value = !currently_enrolled;
+        if (name === 'currently_enrolled_edit') value = !currently_enrolled_edit;
         setState((prevState) => ({ ...prevState, [name]: value }));
     };
 

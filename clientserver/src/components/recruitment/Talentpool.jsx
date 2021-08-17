@@ -11,6 +11,8 @@ import { InputGroup, FormControl } from 'react-bootstrap';
 import Modal from './TalentpoolModalView';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ModalRemove from './TalentpoolModalRemove';
+import ModalAdd from './TalentpoolModalAdd';
 
 toast.configure();
 
@@ -25,9 +27,28 @@ export default function Recruitment() {
         search: '',
         show: false,
         data_modal: undefined,
+        modal_remove: false,
+        modal_remove_data: undefined,
+        modal_add: false,
+        modal_add_data: undefined,
     };
 
-    const [{ spin, spin2, talentpool, update, search, show, data_modal }, setState] = useState(initialState);
+    const [
+        {
+            spin,
+            spin2,
+            talentpool,
+            update,
+            search,
+            show,
+            data_modal,
+            modal_remove,
+            modal_remove_data,
+            modal_add,
+            modal_add_data,
+        },
+        setState,
+    ] = useState(initialState);
 
     useEffect(() => {
         axios.post('/api/recruitment/talentpool', { ...ticket, search }).then((res) => {
@@ -53,50 +74,32 @@ export default function Recruitment() {
         setState((prevState) => ({ ...prevState, show: false, data_modal: undefined }));
     };
 
-    const handleAdd = (e) => {
-        axios
-            .post('/api/recruitment/talentpool/add', { ...ticket, talentpool: e })
-            .then((res) => {
-                if (res.data.isSuccess === true) {
-                    toast.success(res.data.message, {
-                        position: toast.POSITION.TOP_LEFT,
-                        autoClose: 10000,
-                    });
-                    setState((prevState) => ({ ...prevState, update: !update, spin2: true }));
-                } else if (res.data.isAuthenticated === false) {
-                    <ServerAuth />;
-                }
-            })
-            .catch((err) => {
-                toast.error(err.response.data.message, {
-                    position: toast.POSITION.TOP_LEFT,
-                    autoClose: 10000,
-                });
-                setState((prevState) => ({ ...prevState, update: !update, spin2: true }));
-            });
+    const showRemove = (e) => {
+        setState((prevState) => ({ ...prevState, modal_remove: true, modal_remove_data: e }));
     };
 
-    const handleRemove = (e) => {
-        axios
-            .post('/api/recruitment/talentpool/remove', { ...ticket, talentpool: e })
-            .then((res) => {
-                if (res.data.isSuccess === true) {
-                    toast.success(res.data.message, {
-                        position: toast.POSITION.TOP_LEFT,
-                        autoClose: 10000,
-                    });
-                    setState((prevState) => ({ ...prevState, update: !update, spin2: true }));
-                } else if (res.data.isAuthenticated === false) {
-                    <ServerAuth />;
-                }
-            })
-            .catch((err) => {
-                toast.error(err.response.data.message, {
-                    position: toast.POSITION.TOP_LEFT,
-                    autoClose: 10000,
-                });
-                setState((prevState) => ({ ...prevState, update: !update, spin2: true }));
-            });
+    const handleClose_remove = () => {
+        setState((prevState) => ({
+            ...prevState,
+            modal_remove: false,
+            modal_remove_data: undefined,
+            update: !update,
+            spin2: true,
+        }));
+    };
+
+    const showAdd = (e) => {
+        setState((prevState) => ({ ...prevState, modal_add: true, modal_add_data: e }));
+    };
+
+    const handleClose_add = (e) => {
+        setState((prevState) => ({
+            ...prevState,
+            modal_add: false,
+            modal_add_data: undefined,
+            update: !update,
+            spin2: true,
+        }));
     };
 
     if (!spin)
@@ -113,10 +116,24 @@ export default function Recruitment() {
                             <Table
                                 data_table={talentpool}
                                 modal_view={handleModal}
-                                action_add={handleAdd}
-                                action_remove={handleRemove}
+                                action_add={showAdd}
+                                action_remove={showRemove}
                             />
                             <Modal show={show} data_modal={data_modal} hide={handleHide} />
+                            {modal_remove_data ? (
+                                <ModalRemove
+                                    show={modal_remove}
+                                    close={handleClose_remove}
+                                    data={modal_remove_data}
+                                />
+                            ) : (
+                                ''
+                            )}
+                            {modal_add_data ? (
+                                <ModalAdd show={modal_add} close={handleClose_add} data={modal_add_data} />
+                            ) : (
+                                ''
+                            )}
                         </div>
                     ) : (
                         'No Talentpool'

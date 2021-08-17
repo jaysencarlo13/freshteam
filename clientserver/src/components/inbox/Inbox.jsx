@@ -69,7 +69,6 @@ export default function Inbox() {
                     if (res.data.isSuccess === true) {
                         const { messages, email } = res.data;
                         setState((prevState) => ({ ...prevState, messages, email, spin: false }));
-                        console.log(messages);
                     } else if (res.data.isGoogle === false) {
                         setState((prevState) => ({
                             ...prevState,
@@ -81,9 +80,7 @@ export default function Inbox() {
                         <ServerAuth />;
                     }
                 })
-                .catch((err) => {
-                    console.log(err.response.data);
-                });
+                .catch((err) => {});
     }, [isSetup, trigger, update]);
 
     if (compose) {

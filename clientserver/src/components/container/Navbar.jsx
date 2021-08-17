@@ -12,6 +12,8 @@ import { Editor } from 'react-draft-wysiwyg';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ModalEditOrganization from './ModalEditOrganization';
+import Spinner from '../container/Spinner';
 
 toast.configure();
 
@@ -25,6 +27,17 @@ export default function _Navbar() {
     const handleClose = () => {
         setShow(false);
         setError(false);
+        setName(undefined);
+        setBirthdate(undefined);
+        setContact(undefined);
+        setEmail(undefined);
+        setHome(undefined);
+        setId(undefined);
+        setStatus(undefined);
+        setDepartment(undefined);
+        setTitle(undefined);
+        setJoin(undefined);
+        setUpdate(!update);
     };
     const ticket = JSON.parse(localStorage.getItem('data'));
 
@@ -46,6 +59,10 @@ export default function _Navbar() {
     const [errorMessage, seterrorMessage] = useState(undefined);
     const [errorVariant, seterrorVariant] = useState(undefined);
 
+    const [update, setUpdate] = useState(false);
+
+    const [spinChangePassword, setSpinChangePassword] = useState(false);
+
     const handleSubmit = (e) => {
         e.preventDefault();
         const userdetails = {
@@ -61,7 +78,7 @@ export default function _Navbar() {
                 status: status,
                 department: department,
                 title: title,
-                join_date: join,
+                join_date: moment(join).format('YYYY-MM-DD'),
             },
         };
         axios
@@ -95,7 +112,7 @@ export default function _Navbar() {
 
     useEffect(() => {
         if (!user && role !== 'applicant') getUserDetails();
-    });
+    }, [update]);
 
     if (user && !email) {
         setName(user.personal_info.name);
@@ -109,7 +126,7 @@ export default function _Navbar() {
         setHome(user.personal_info.home);
         if (user.work_info) {
             setId(user.work_info.employee_id);
-            setStatus(user.work_info.employee_status);
+            setStatus(user.work_info.status);
             setDepartment(user.work_info.department);
             setTitle(user.work_info.title);
             setJoin(
@@ -156,6 +173,7 @@ export default function _Navbar() {
 
     const handleClose_changepassword = () => {
         setState(initialState);
+        setUpdate(!update);
     };
 
     const handleShow_changepassword = () => {
@@ -164,7 +182,9 @@ export default function _Navbar() {
 
     const handleSubmit_changepassword = (e) => {
         e.preventDefault();
+
         if (oldpassword && newpassword === repeatpassword && newpassword.length >= 7) {
+            setSpinChangePassword(true);
             const userdetails = {
                 password: oldpassword,
                 newpassword: newpassword,
@@ -179,6 +199,7 @@ export default function _Navbar() {
                             alert_message: response.data.message,
                             alert_variant: 'success',
                         }));
+                        setSpinChangePassword(false);
                     } else if (response.data.isAuthenticated === false) {
                         <ServerAuth />;
                     } else {
@@ -188,6 +209,7 @@ export default function _Navbar() {
                             alert_message: response.data.message,
                             alert_variant: 'danger',
                         }));
+                        setSpinChangePassword(false);
                     }
                 })
                 .catch((err) => {
@@ -197,6 +219,7 @@ export default function _Navbar() {
                         alert_message: 'Something Went Wrong',
                         alert_variant: 'danger',
                     }));
+                    setSpinChangePassword(false);
                 });
         } else {
             if (!oldpassword)
@@ -410,12 +433,42 @@ export default function _Navbar() {
     };
 
     //Add new dropdown End
+
+    //edit organization start
+    const initialState_editOrganization = {
+        show_editOrganization: false,
+        organization: undefined,
+    };
+    const [{ show_editOrganization, organization }, setEditOrganization] = useState(
+        initialState_editOrganization
+    );
+    const handleEditOrganization = () => {
+        axios.post('/api/organization', { ...ticket }).then((res) => {
+            if (res.data.isSuccess === true) {
+                setEditOrganization((prevState) => ({
+                    ...prevState,
+                    show_editOrganization: true,
+                    organization: res.data.organization,
+                }));
+            }
+        });
+    };
+    const handleHide_editOrganization = () => {
+        setEditOrganization(initialState_editOrganization);
+    };
+    //edit organization end
     return (
         <div>
             {role === 'hr' || role === 'admin' ? (
                 <Navbar style={{ position: 'fixed' }}>
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />
                     <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
+                        <div className="gy-3 navbar-edit-organization-button">
+                            <Button variant="info" onClick={handleEditOrganization}>
+                                Edit Organization Details
+                            </Button>
+                        </div>
+
                         <DropdownButton
                             show={show_addnew}
                             onMouseEnter={enter_addnew_hover}
@@ -447,6 +500,23 @@ export default function _Navbar() {
                             <NavDropdown.Item href="#change_password" onClick={handleShow_changepassword}>
                                 Change Password
                             </NavDropdown.Item>
+                            <NavDropdown.Item href="/logout">Signout</NavDropdown.Item>
+                        </NavDropdown>
+                    </Navbar.Collapse>
+                </Navbar>
+            ) : role === 'superuser' || role === 'admin_fresh' ? (
+                <Navbar style={{ position: 'fixed' }}>
+                    <Navbar.Toggle aria-controls="basic-navbar-nav" />
+                    <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
+                        <NavDropdown
+                            id="account-id"
+                            alignRight={true}
+                            title={
+                                <span>
+                                    <i className="fas fa-user"></i>
+                                </span>
+                            }
+                        >
                             <NavDropdown.Item href="/logout">Signout</NavDropdown.Item>
                         </NavDropdown>
                     </Navbar.Collapse>
@@ -667,58 +737,69 @@ export default function _Navbar() {
                 <Modal.Header closeButton>
                     <Modal.Title>Change Password</Modal.Title>
                 </Modal.Header>
-                <Modal.Body>
-                    {alert_changepassword ? (
-                        <Alert variant={alert_variant}>
-                            <h2>{alert_message}</h2>
-                        </Alert>
-                    ) : (
-                        ''
-                    )}
-                    <Form id="modal-form-changepassword" onSubmit={handleSubmit_changepassword}>
-                        <Form.Group className="mb-3" controlId="name">
-                            <Form.Label>Old Password</Form.Label>
-                            <Form.Control
-                                name="oldpassword"
-                                required
-                                value={oldpassword}
-                                onChange={onChange}
-                                size="lg"
-                                type="password"
-                            />
-                        </Form.Group>
-                        <Form.Group className="mb-3" controlId="name">
-                            <Form.Label>New Password</Form.Label>
-                            <Form.Control
-                                name="newpassword"
-                                required
-                                value={newpassword}
-                                onChange={onChange}
-                                size="lg"
-                                type="password"
-                            />
-                        </Form.Group>
-                        <Form.Group className="mb-3" controlId="name">
-                            <Form.Label>Repeat Password</Form.Label>
-                            <Form.Control
-                                name="repeatpassword"
-                                required
-                                value={repeatpassword}
-                                onChange={onChange}
-                                size="lg"
-                                type="password"
-                            />
-                        </Form.Group>
-                    </Form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleClose_changepassword}>
-                        Close
-                    </Button>
-                    <Button variant="primary" form="modal-form-changepassword" type="Submit">
-                        Change Password
-                    </Button>
-                </Modal.Footer>
+                {spinChangePassword ? (
+                    <Modal.Body>
+                        <Spinner />
+                    </Modal.Body>
+                ) : (
+                    <Modal.Body>
+                        {alert_changepassword ? (
+                            <Alert variant={alert_variant}>
+                                <h2>{alert_message}</h2>
+                            </Alert>
+                        ) : (
+                            ''
+                        )}
+                        <Form id="modal-form-changepassword" onSubmit={handleSubmit_changepassword}>
+                            <Form.Group className="mb-3" controlId="name">
+                                <Form.Label>Old Password</Form.Label>
+                                <Form.Control
+                                    name="oldpassword"
+                                    required
+                                    value={oldpassword}
+                                    onChange={onChange}
+                                    size="lg"
+                                    type="password"
+                                />
+                            </Form.Group>
+                            <Form.Group className="mb-3" controlId="name">
+                                <Form.Label>New Password</Form.Label>
+                                <Form.Control
+                                    name="newpassword"
+                                    required
+                                    value={newpassword}
+                                    onChange={onChange}
+                                    size="lg"
+                                    type="password"
+                                />
+                            </Form.Group>
+                            <Form.Group className="mb-3" controlId="name">
+                                <Form.Label>Repeat Password</Form.Label>
+                                <Form.Control
+                                    name="repeatpassword"
+                                    required
+                                    value={repeatpassword}
+                                    onChange={onChange}
+                                    size="lg"
+                                    type="password"
+                                />
+                            </Form.Group>
+                        </Form>
+                    </Modal.Body>
+                )}
+
+                {spinChangePassword ? (
+                    <Modal.Footer></Modal.Footer>
+                ) : (
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={handleClose_changepassword}>
+                            Close
+                        </Button>
+                        <Button variant="primary" form="modal-form-changepassword" type="Submit">
+                            Change Password
+                        </Button>
+                    </Modal.Footer>
+                )}
             </Modal>
 
             <Modal show={show_addDepartment} onHide={handleClose_addDepartment} animation={true}>
@@ -874,6 +955,16 @@ export default function _Navbar() {
                     </Button>
                 </Modal.Footer>
             </Modal>
+
+            {organization ? (
+                <ModalEditOrganization
+                    show={show_editOrganization}
+                    callback={handleHide_editOrganization}
+                    data={organization}
+                />
+            ) : (
+                ''
+            )}
         </div>
     );
 }

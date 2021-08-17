@@ -2,6 +2,8 @@ const Organizations = require('../models/organization');
 const Users = require('../models/user');
 const Organization_Members = require('../models/organization_members');
 const JobPostings = require('../models/job_postings');
+const OrganizationHistory = require('../models/organization_history');
+const moment = require('moment');
 
 exports.add_department = async (req, res, next) => {
     try {
@@ -86,9 +88,18 @@ exports.add_job_posting = async (req, res, next) => {
                 editor: editor,
             });
             await job_posting.save();
-            res.json({ isSuccess: true, message: 'Success Posting a Job' });
+            const orgHistory = new OrganizationHistory({
+                organization_id,
+                job_postings: {
+                    date: moment().toDate(),
+                    posted_by: user._id,
+                },
+            });
+            await orgHistory.save();
+            return res.json({ isSuccess: true, message: 'Success Posting a Job' });
         }
     } catch (err) {
-        res.status(500).json({ error: err, message: 'Something went Wrong!.' });
+        console.log(err);
+        return res.status(500).json({ error: err, message: 'Something went Wrong!.' });
     }
 };

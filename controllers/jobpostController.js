@@ -7,6 +7,7 @@ const JobPostings = require('../models/job_postings');
 const Organization_Members = require('../models/organization_members');
 const Candidates = require('../models/candidates');
 const Organization = require('../models/organization');
+const Talentpool = require('../models/talent_pool');
 
 exports.view = async (req, res, next) => {
     try {
@@ -43,10 +44,25 @@ exports.update = async (req, res, next) => {
     }
 };
 
+exports.delete = async (req, res, next) => {
+    try {
+        if (req.body) {
+            const { user, jobpost_id } = req.body;
+            await JobPostings.findByIdAndDelete(jobpost_id);
+            await Talentpool.deleteMany({ job_posting_id: jobpost_id });
+            await Candidates.deleteMany({ job_posting_id: jobpost_id });
+            return res.json({ isSuccess: true, message: 'Success Deleting this post' });
+        }
+    } catch (err) {
+        return res.status(500).json({ error: err, message: 'Something Went wrong' });
+    }
+};
+
 exports.fetchJobPost = async (req, res, next) => {
     try {
         if (req.query) {
-            const { search } = req.query;
+            let { search } = req.query;
+
             const organizations = await Organization.find();
             const arrayJob = [];
             const jobpost = search

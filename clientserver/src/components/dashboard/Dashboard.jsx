@@ -12,7 +12,10 @@ import MyReferrals from './MyReferrals';
 import BirthdayCorner from './BirthdayCorner';
 import NewJoinees from './NewJoinees';
 import Spinner from '../container/Spinner';
-import { SelectionState } from 'draft-js';
+import { ServerAuth } from '../../Auth';
+import Superuser from './Superuser';
+import AdminFresh from './AdminFresh';
+import ModalDone from './MyInterviewsModalDone';
 
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -26,16 +29,33 @@ function Dashboard() {
     const [interviewData, setinterviewData] = useState(undefined);
     const [spin, setSpin] = useState(true);
     const [spin2, setSpin2] = useState(false);
+    const [spin3, setSpin3] = useState(false);
     const [transferResponse, setTransferResponse] = useState(undefined);
+    const [requestResponse, setRequestResponse] = useState(undefined);
+    const [superuser, setSuperuser] = useState(undefined);
+    const [spinSuperuser, setSpinSuperUser] = useState(true);
+    const [update, setUpdate] = useState(false);
+    const [show_modal_done, setShow_modal_done] = useState(false);
+    const [modal_done_data, setModal_done_data] = useState(undefined);
+    const [messenger, setMessenger] = useState(undefined);
 
     useEffect(() => {
-        if (!interviewData && role !== 'fresh' && role !== 'applicant') {
+        console.log('here');
+        if (role !== 'fresh' && role !== 'applicant' && role !== 'superuser' && role !== 'admin_fresh') {
             const ticket = JSON.parse(localStorage.getItem('data'));
             axios
                 .post('/api/fetchdashboard', { ...ticket })
                 .then((res) => {
                     if (res.data.isSuccess === true) {
-                        const { today, missed, upcoming, referrals, birthday_corner, new_joinees } = res.data;
+                        const {
+                            today,
+                            missed,
+                            upcoming,
+                            referrals,
+                            birthday_corner,
+                            new_joinees,
+                            messenger,
+                        } = res.data;
                         setinterviewData({
                             today: today,
                             missed: missed,
@@ -44,6 +64,7 @@ function Dashboard() {
                             birthday_corner: birthday_corner,
                             new_joinees: new_joinees,
                         });
+                        setMessenger(messenger);
                         setSpin(false);
                     } else if (res.data.isAuthenticated === false) {
                         localStorage.clear();
@@ -52,7 +73,22 @@ function Dashboard() {
                 })
                 .catch((err) => {});
         }
-    });
+        if (role === 'superuser') {
+            axios
+                .post('/api/superuser', { ...ticket })
+                .then((res) => {
+                    if (res.data.isSuccess === true) {
+                        setSuperuser(res.data.table);
+                        setSpinSuperUser(false);
+                    } else if (res.data.isAuthenticated === false) {
+                        <ServerAuth />;
+                    }
+                })
+                .catch((err) => {
+                    setSpinSuperUser(false);
+                });
+        }
+    }, [update]);
 
     const handleTransfer = () => {
         setSpin2(true);
@@ -73,6 +109,66 @@ function Dashboard() {
                 });
             });
     };
+
+    const handleRequestAdmin = () => {
+        setSpin3(true);
+        axios
+            .post('/api/user/admin_request', { ...ticket })
+            .then((res) => {
+                if (res.data.isSuccess === true) {
+                    setSpin3(false);
+                    setRequestResponse(res.data.message);
+                    toast.success(res.data.message, {
+                        position: toast.POSITION.TOP_LEFT,
+                        autoClose: 3000,
+                    });
+                } else if (res.data.isSuccess === false) {
+                    setSpin3(false);
+                    setRequestResponse(res.data.message);
+                    toast.error(res.data.message, {
+                        position: toast.POSITION.TOP_LEFT,
+                        autoClose: 3000,
+                    });
+                } else if (res.data.isAuthenticated === false) {
+                    <ServerAuth />;
+                }
+            })
+            .catch((err) => {
+                toast.error(err.response.data.message, {
+                    position: toast.POSITION.TOP_LEFT,
+                    autoClose: 3000,
+                });
+                setSpin3(false);
+            });
+    };
+
+    const handleReload = () => {
+        setSuperuser(undefined);
+        setSpinSuperUser(true);
+        setUpdate(!update);
+    };
+
+    const handleShow_modalDone = (e) => {
+        setShow_modal_done(true);
+        setModal_done_data(e);
+    };
+
+    const handleClose_modalDone = () => {
+        setinterviewData(undefined);
+        setUpdate(!update);
+        setShow_modal_done(false);
+        setModal_done_data(undefined);
+        setSpin(true);
+    };
+
+    if (role === 'admin_fresh') {
+        return <AdminFresh callback={handleReload} />;
+    }
+
+    if (role === 'superuser') {
+        if (spinSuperuser) return <Spinner />;
+        return <Superuser request={superuser} callback={handleReload} />;
+    }
 
     if (role === 'fresh')
         return (
@@ -95,6 +191,20 @@ function Dashboard() {
                         ) : (
                             <Button variant="info" onClick={handleTransfer}>
                                 Transfer this account to applicant
+                            </Button>
+                        )}
+                    </div>
+                    <div className="col-8" style={{ textAlign: 'center', color: 'red' }}>
+                        If you wish to manage an organization click this button below.
+                    </div>
+                    <div className="col-8" style={{ textAlign: 'center', marginTop: '10px' }}>
+                        {spin3 ? (
+                            <Spinner />
+                        ) : requestResponse ? (
+                            <h3>{requestResponse}</h3>
+                        ) : (
+                            <Button variant="info" onClick={handleRequestAdmin}>
+                                Request to be an admin
                             </Button>
                         )}
                     </div>
@@ -142,7 +252,10 @@ function Dashboard() {
                             </Card.Header>
                             <Card.Body>
                                 {interviewData && interviewData[interviewStatus].length !== 0 ? (
-                                    <MyInterviews data={interviewData[interviewStatus]} />
+                                    <MyInterviews
+                                        data={interviewData[interviewStatus]}
+                                        callback={handleShow_modalDone}
+                                    />
                                 ) : (
                                     <h3>No Interviews Found!</h3>
                                 )}
@@ -192,6 +305,16 @@ function Dashboard() {
                         </Card>
                     </div>
                 </div>
+
+                {modal_done_data ? (
+                    <ModalDone
+                        show={show_modal_done}
+                        close={handleClose_modalDone}
+                        data={{ ...modal_done_data, messenger }}
+                    />
+                ) : (
+                    ''
+                )}
             </Contents>
         );
     else

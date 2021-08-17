@@ -17,15 +17,16 @@ export default function Recruitment() {
         spin: true,
         candidates: undefined,
         update: false,
+        messenger: undefined,
     };
 
-    const [{ spin, candidates, update }, setState] = useState(initialState);
+    const [{ spin, candidates, update, messenger }, setState] = useState(initialState);
 
     useEffect(() => {
         axios.post('/api/recruitment/candidates', { ...ticket, postid }).then((res) => {
             if (res.data && res.data.isSuccess === true) {
-                const { candidates } = res.data;
-                setState((prevState) => ({ ...prevState, candidates, spin: false }));
+                const { candidates, messenger } = res.data;
+                setState((prevState) => ({ ...prevState, candidates, spin: false, messenger }));
             } else if (res.data && res.data.isAuthenticated === false) {
                 <ServerAuth />;
             }
@@ -41,7 +42,11 @@ export default function Recruitment() {
             <Contents>
                 <Nav active="candidates" />
                 {candidates ? (
-                    <CandidatesTable data_candidates={candidates} callback={handleCallback} />
+                    <CandidatesTable
+                        data_candidates={candidates}
+                        callback={handleCallback}
+                        messenger={messenger}
+                    />
                 ) : (
                     'No Candidates For this JobPost'
                 )}

@@ -18,7 +18,13 @@ exports.inbox = async (req, res, next) => {
             const thisuser = await Users.findById(user._id);
             const { organization_id } = await Organization_Members.findOne({ member_id: thisuser._id });
             if (trigger === 'all') {
-                const inbox = await Inbox.find({ to: { $in: [thisuser.email] } }).sort({ date: '-1' });
+                const inbox = await Inbox.find()
+                    .or([
+                        { to: { $in: [thisuser.google.username] } },
+                        { cc: { $in: [thisuser.google.username] } },
+                        { bcc: { $in: [thisuser.google.username] } },
+                    ])
+                    .sort({ date: '-1' });
                 return res.json({
                     isSuccess: true,
                     message: 'Success',
@@ -36,11 +42,13 @@ exports.inbox = async (req, res, next) => {
                     'personal_info',
                     'email'
                 );
-                const inbox = await Inbox.find({ from: [...applicants], to: { $in: [thisuser.email] } }).sort(
-                    {
-                        date: '-1',
-                    }
-                );
+                const inbox = await Inbox.find()
+                    .or([
+                        { from: { $in: applicants }, to: { $in: [thisuser.google.username] } },
+                        { from: { $in: applicants }, cc: { $in: [thisuser.google.username] } },
+                        { from: { $in: applicants }, bcc: { $in: [thisuser.google.username] } },
+                    ])
+                    .sort({ date: '-1' });
                 return res.json({
                     isSuccess: true,
                     message: 'Success',
@@ -53,9 +61,13 @@ exports.inbox = async (req, res, next) => {
                     'member_id'
                 );
                 const users = FilterArray(await Users.find({ _id: [...members] }), 'google', 'username');
-                const inbox = await Inbox.find({ from: [...users], to: { $in: [thisuser.email] } }).sort({
-                    date: '-1',
-                });
+                const inbox = await Inbox.find()
+                    .or([
+                        { from: { $in: users }, to: { $in: [thisuser.google.username] } },
+                        { from: { $in: users }, cc: { $in: [thisuser.google.username] } },
+                        { from: { $in: users }, bcc: { $in: [thisuser.google.username] } },
+                    ])
+                    .sort({ date: '-1' });
                 return res.json({
                     isSuccess: true,
                     message: 'Success',
@@ -65,8 +77,7 @@ exports.inbox = async (req, res, next) => {
             }
         }
     } catch (err) {
-        console.log(err);
-        res.status(500).json({ error: err, message: 'Something went Wrong!' });
+        return res.status(500).json({ error: err, message: 'Something went Wrong!' });
     }
 };
 
@@ -115,7 +126,6 @@ exports.reply = async (req, res, next) => {
             return res.json({ isSuccess: true, message: 'Success' });
         }
     } catch (err) {
-        console.log(err);
         res.status(500).json({ error: err, message: 'Something Went Wrong' });
     }
 };
@@ -149,7 +159,6 @@ exports.send = async (req, res, next) => {
             return res.json({ isSuccess: true, message: 'Success' });
         }
     } catch (err) {
-        console.log(err);
         res.status(500).json({ error: err, message: 'Something Went Wrong' });
     }
 };
@@ -164,15 +173,15 @@ exports.search = async (req, res, next) => {
             let users_ = search
                 ? await Users.find(
                       { _id: [...members], name: { $regex: search, $options: 'i' } },
-                      '-_id name google.username'
+                      '_id name google.username'
                   ).sort({ name: 1 })
-                : await Users.find({ _id: [...members] }, '-_id name google.username').sort({
+                : await Users.find({ _id: [...members] }, '_id name google.username').sort({
                       name: 1,
                   });
             let users = [];
             users_.forEach((element) => {
                 if (element.name !== '' && element.google.username !== '')
-                    users.push({ name: element.name, email: element.google.username });
+                    users.push({ _id: element._id, name: element.name, email: element.google.username });
             });
             return res.json({ isSuccess: true, suggestions: users });
         }

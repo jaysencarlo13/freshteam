@@ -7,6 +7,8 @@ const JobPostings = require('../models/job_postings');
 const Organization_Members = require('../models/organization_members');
 const Candidates = require('../models/candidates');
 const Talentpool = require('../models/talent_pool');
+const OrganizationHistory = require('../models/organization_history');
+const nodemailer = require('nodemailer');
 
 exports.recruitment = async (req, res, next) => {
     try {
@@ -54,6 +56,7 @@ exports.candidates = async (req, res, next) => {
             const { user, postid } = req.body;
             const arrayCandidates = [];
             const { organization_id } = await Organization_Members.findOne({ member_id: user._id });
+            const { google } = await User.findById(user._id);
             const job_postings = await JobPostings.find({ organization_id }, '_id');
             const candidates = postid
                 ? await Candidates.find({ job_posting_id: postid })
@@ -79,7 +82,15 @@ exports.candidates = async (req, res, next) => {
                     });
                 });
             }
-            return res.json({ isSuccess: true, message: 'Success', candidates: arrayCandidates });
+            return res.json({
+                isSuccess: true,
+                message: 'Success',
+                candidates: arrayCandidates,
+                messenger: {
+                    username: google.username,
+                    isGoogleSetup: google.username !== '' || google.password !== '' ? true : false,
+                },
+            });
         }
     } catch (err) {
         res.status(500).json({ error: err, message: 'Something Went Wrong' });
@@ -90,13 +101,14 @@ exports.fetchinfo = async (req, res, next) => {
     try {
         if (req.body) {
             const { user, applicantId } = req.body;
+            const { name, google } = await User.findById(user._id);
             const applicant = await Applicants.findById(applicantId);
             const isPersonalInfo = applicant.personal_info ? true : false;
             const isWorkExperience = applicant.work_experience.length > 0 ? true : false;
             const isEducation = applicant.education.length > 0 ? true : false;
             const isSkills = applicant.skills.length > 0 ? true : false;
             const isCertification = applicant.certification_licenses.length > 0 ? true : false;
-            res.json({
+            return res.json({
                 isSuccess: true,
                 message: 'Success',
                 applicant: {
@@ -107,18 +119,59 @@ exports.fetchinfo = async (req, res, next) => {
                     isCertification,
                     applicant,
                 },
+                isGoogleSetup: google
+                    ? google.username !== '' && google.password !== ''
+                        ? true
+                        : false
+                    : false,
+                google_email: google.username,
+                name,
             });
         }
     } catch (err) {
-        res.status(500).json({ error: err, message: 'Something Went Wrong!' });
+        return res.status(500).json({ error: err, message: 'Something Went Wrong!' });
     }
 };
 
 exports.update = async (req, res, next) => {
     try {
         if (req.body) {
-            const { user, status, candidate_id } = req.body;
+            const { user, status, candidate_id, message, interview } = req.body;
             const { organization_id } = await Organization_Members.findOne({ member_id: user._id });
+            const { applicant_id: appId } = await Candidates.findById(candidate_id);
+            const { to, cc, from, subject, text, html } = message;
+            const thisuser = await User.findById(user._id);
+            const googlepassword = await thisuser.GooglePassword();
+            let transporter = nodemailer.createTransport({
+                host: 'smtp.gmail.com',
+                port: 465,
+                secure: true,
+                auth: {
+                    user: thisuser.google.username,
+                    pass: googlepassword,
+                },
+                priority: 'high',
+            });
+            await transporter.sendMail({
+                from: thisuser.google.username,
+                to,
+                cc,
+                subject,
+                text,
+                html,
+            });
+
+            if (status === 'Interview') {
+                const interview_ = new Interviews({
+                    interviewer: interview.interviewer_id,
+                    interviewee: appId,
+                    assignBy: user._id,
+                    date_time: moment(interview.date + ' ' + interview.time, 'YYYY-MM-DD HH:mm').toDate(),
+                    location: 'via skype',
+                });
+                await interview_.save();
+            }
+
             if (status !== 'Hired') {
                 const candidate = await Candidates.findByIdAndUpdate(candidate_id, { status: status });
                 return res.json({ isSuccess: true, message: 'Success' });
@@ -148,6 +201,14 @@ exports.update = async (req, res, next) => {
                 await Candidates.deleteMany({ applicant_id: applicant._id });
                 await Talentpool.deleteMany({ applicant_id: applicant._id });
                 await Applicants.findByIdAndDelete(applicant._id);
+                const orgHistory = new OrganizationHistory({
+                    organization_id,
+                    hired: {
+                        date: moment().toDate(),
+                        hired_by: user._id,
+                    },
+                });
+                await orgHistory.save();
                 return res.json({
                     isSuccess: true,
                     message:
@@ -156,20 +217,56 @@ exports.update = async (req, res, next) => {
             }
         }
     } catch (err) {
-        console.log(err);
-        res.status(500).json({ error: err, message: 'Something Went Wrong' });
+        return res.status(500).json({ error: err, message: 'Something Went Wrong' });
     }
 };
 
 exports.remove = async (req, res, next) => {
     try {
         if (req.body) {
-            const { candidate_id } = req.body;
+            const { user, candidate_id, message } = req.body;
+            const { organization_id } = await Organization_Members.findOne({ member_id: user._id });
+            const { to, cc, from, subject, text, html } = message;
+            const thisuser = await User.findById(user._id);
+            const googlepassword = await thisuser.GooglePassword();
+            let transporter = nodemailer.createTransport({
+                host: 'smtp.gmail.com',
+                port: 465,
+                secure: true,
+                auth: {
+                    user: thisuser.google.username,
+                    pass: googlepassword,
+                },
+                priority: 'high',
+            });
+            await transporter.sendMail({
+                from: thisuser.google.username,
+                to,
+                cc,
+                subject,
+                text,
+                html,
+            });
             await Candidates.findByIdAndRemove(candidate_id);
-            res.json({ isSuccess: true, message: 'Success' });
+            const orgHistory = new OrganizationHistory({
+                organization_id,
+                rejected_candidates: {
+                    date: moment().toDate(),
+                    rejected_by: user._id,
+                },
+            });
+            await orgHistory.save();
+            return res.json({ isSuccess: true, message: 'Success' });
         }
     } catch (err) {
-        res.status(500).json({ error: err, message: 'Remove Failed!. Something Went Wrong' });
+        if (err.responseCode === 535)
+            return res.status(500).json({
+                error: err,
+                message:
+                    'Google Username or Password is incorrect. Check and input your google account credentials.',
+                responseCode: err.responseCode,
+            });
+        return res.status(500).json({ error: err, message: 'Remove Failed!. Something Went Wrong' });
     }
 };
 
@@ -179,6 +276,7 @@ exports.talentpool = async (req, res, next) => {
             let arrayTalent = [];
             let { user, search } = req.body;
             search = search === '' ? undefined : search;
+            const user_ = await User.findById(user._id);
             const { organization_id } = await Organization_Members.findOne({ member_id: user._id });
             const jobpost = search
                 ? await JobPostings.find(
@@ -232,6 +330,11 @@ exports.talentpool = async (req, res, next) => {
                     file,
                     title,
                     referred_by,
+                    messenger: {
+                        isGoogleSetup:
+                            user_.google.username != '' && user_.google.password != '' ? true : false,
+                        email: user_.google.username,
+                    },
                 });
             });
             res.json({ isSuccess: true, message: 'Success', talentpool: arrayTalent });
@@ -244,8 +347,29 @@ exports.talentpool = async (req, res, next) => {
 exports.talentpool_add = async (req, res, next) => {
     try {
         if (req.body) {
-            const { talentpool } = req.body;
+            const { user, talentpool, message } = req.body;
             const { talentpool_id, job_posting_id, applicant_id, date_applied, referred_by } = talentpool;
+            const { to, cc, from, subject, text, html } = message;
+            const thisuser = await User.findById(user._id);
+            const googlepassword = await thisuser.GooglePassword();
+            let transporter = nodemailer.createTransport({
+                host: 'smtp.gmail.com',
+                port: 465,
+                secure: true,
+                auth: {
+                    user: thisuser.google.username,
+                    pass: googlepassword,
+                },
+                priority: 'high',
+            });
+            await transporter.sendMail({
+                from: thisuser.google.username,
+                to,
+                cc,
+                subject,
+                text,
+                html,
+            });
             const newCandidate = new Candidates({
                 job_posting_id,
                 applicant_id,
@@ -254,21 +378,56 @@ exports.talentpool_add = async (req, res, next) => {
             });
             await newCandidate.save();
             await Talentpool.findByIdAndDelete(talentpool_id);
-            res.json({ isSuccess: true, message: 'Adding to Candidates Success' });
+            return res.json({ isSuccess: true, message: 'Adding to Candidates Success' });
         }
     } catch (err) {
-        res.status(500).json({ error: err, message: 'Something Went Wrong' });
+        if (err.responseCode === 535)
+            return res.status(500).json({
+                error: err,
+                message:
+                    'Google Username or Password is incorrect. Check and input your google account credentials.',
+                responseCode: err.responseCode,
+            });
+        return res.status(500).json({ error: err, message: 'Something Went Wrong' });
     }
 };
 
 exports.talentpool_remove = async (req, res, next) => {
     try {
         if (req.body) {
-            const { talentpool } = req.body;
+            const { user, talentpool, message } = req.body;
+            const { to, cc, from, subject, text, html } = message;
+            const thisuser = await User.findById(user._id);
+            const googlepassword = await thisuser.GooglePassword();
+            let transporter = nodemailer.createTransport({
+                host: 'smtp.gmail.com',
+                port: 465,
+                secure: true,
+                auth: {
+                    user: thisuser.google.username,
+                    pass: googlepassword,
+                },
+                priority: 'high',
+            });
+            await transporter.sendMail({
+                from: thisuser.google.username,
+                to,
+                cc,
+                subject,
+                text,
+                html,
+            });
             await Talentpool.findByIdAndDelete(talentpool['talentpool_id']);
-            res.json({ isSuccess: true, message: 'Removing from talent pool Success' });
+            return res.json({ isSuccess: true, message: 'Removing from talent pool Success' });
         }
     } catch (err) {
-        res.status(500).json({ error: err, message: 'Something Went Wrong' });
+        if (err.responseCode === 535)
+            return res.status(500).json({
+                error: err,
+                message:
+                    'Google Username or Password is incorrect. Check and input your google account credentials.',
+                responseCode: err.responseCode,
+            });
+        return res.status(500).json({ error: err, message: 'Something Went Wrong' });
     }
 };

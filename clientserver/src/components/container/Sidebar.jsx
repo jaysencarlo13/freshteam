@@ -72,7 +72,7 @@ export default function Sidebar() {
                         </a>
                     </li>
                     <li>
-                        <a href="#5">
+                        <a href="/reports">
                             <Tippy content="Reports" placement="right">
                                 <span>
                                     <i className="fas fa-chart-area"></i>
@@ -140,7 +140,7 @@ export default function Sidebar() {
                         </a>
                     </li>
                     <li>
-                        <a href="#5">
+                        <a href="/reports">
                             <Tippy content="Reports" placement="right">
                                 <span>
                                     <i className="fas fa-chart-area"></i>
@@ -161,6 +161,17 @@ export default function Sidebar() {
                         </span>
                     </h1>
                 </div>
+                <ul className="list-unstyled components navbar-nav-scroll">
+                    <li>
+                        <a href="/">
+                            <Tippy content="Dashboard" placement="right">
+                                <span>
+                                    <i className="fas fa-tachometer-alt"></i>
+                                </span>
+                            </Tippy>
+                        </a>
+                    </li>
+                </ul>
             </nav>
         );
     return '';

@@ -13,7 +13,6 @@ function Logout() {
         axios
             .post('/api/logout', { ...data })
             .then((res) => {
-                console.log(res);
                 if (res.data && res.data.isLogout === true) {
                     localStorage.clear();
                     setLogout(true);
@@ -22,7 +21,6 @@ function Logout() {
                 }
             })
             .catch((err) => {
-                console.log(err);
                 setRedirect(true);
             });
     }, []);

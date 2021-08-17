@@ -23,7 +23,6 @@ import { ServerAuth } from '../../Auth';
 import axios from 'axios';
 
 export default function SettingsTable({ data, callback }) {
-    console.log(data);
     const ticket = JSON.parse(localStorage.getItem('data'));
 
     const initialState = {

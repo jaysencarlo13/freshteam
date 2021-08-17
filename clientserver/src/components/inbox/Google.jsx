@@ -6,7 +6,7 @@ import { ServerAuth } from '../../Auth';
 import { Redirect } from 'react-router-dom';
 import Spinner from '../container/Spinner';
 
-export default function Google({ callback, googleMessage }) {
+export default function Google({ callback, googleMessage, modal }) {
     const ticket = JSON.parse(localStorage.getItem('data'));
     const initialState = {
         email: '',
@@ -31,7 +31,6 @@ export default function Google({ callback, googleMessage }) {
                 }
             })
             .catch((err) => {
-                console.log(err.response.data.error);
                 setState((prevState) => ({ ...prevState, redirect: true }));
             });
     };
@@ -42,7 +41,7 @@ export default function Google({ callback, googleMessage }) {
     };
     if (redirect) return <Redirect to="/" />;
     if (!spin)
-        return (
+        return modal === undefined || modal === false ? (
             <Content>
                 <div className="row justify-content-center">
                     <div className="col-4">
@@ -52,8 +51,8 @@ export default function Google({ callback, googleMessage }) {
                                     ? googleMessage
                                     : 'You havent setup your google account. Please input your credentials of your Google Account. And Allow Less Secure Apps in your google account in this link'}
                                 <br />
-                                <a href="https://myaccount.google.com/lesssecureapps?">
-                                    Allow Less Secure App
+                                <a href="https://myaccount.google.com/lesssecureapps?" target="_blank">
+                                    Allow Less Secure App. It must be ON.
                                 </a>
                             </h4>
                             <Form.Text className="text-muted">
@@ -87,6 +86,49 @@ export default function Google({ callback, googleMessage }) {
                     </div>
                 </div>
             </Content>
+        ) : (
+            <div className="row justify-content-center">
+                <div className="col-10">
+                    <Form onSubmit={onSubmit}>
+                        <h4 style={{ color: 'red' }}>
+                            {googleMessage
+                                ? googleMessage
+                                : 'You havent setup your google account. Please input your credentials of your Google Account. And Allow Less Secure Apps in your google account in this link'}
+                            <br />
+                            <a href="https://myaccount.google.com/lesssecureapps?" target="_blank">
+                                Allow Less Secure App. It must be ON
+                            </a>
+                        </h4>
+                        <Form.Text className="text-muted">
+                            We'll never share your credentials with anyone else.
+                        </Form.Text>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Email address</Form.Label>
+                            <Form.Control
+                                type="email"
+                                name="email"
+                                value={email}
+                                placeholder="Enter email"
+                                onChange={handleChange}
+                            />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label>Password</Form.Label>
+                            <Form.Control
+                                type="password"
+                                name="password"
+                                value={password}
+                                placeholder="Password"
+                                onChange={handleChange}
+                            />
+                        </Form.Group>
+                        <Button variant="primary" type="submit">
+                            Submit
+                        </Button>
+                    </Form>
+                </div>
+            </div>
         );
     else return <Spinner />;
 }

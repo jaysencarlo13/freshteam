@@ -20,28 +20,51 @@ export default function Timeoff() {
         to: moment().endOf('month').format('YYYY-MM-DD'),
         show: false,
         remaining: undefined,
+        menu: 'mytimeoff',
     };
 
-    const [{ spin, table, update, from, to, show, remaining }, setState] = useState(initialState);
+    const [{ spin, table, update, from, to, show, remaining, menu }, setState] = useState(initialState);
 
     useEffect(() => {
-        axios
-            .post('/api/timeoff', { ...ticket, filter: [moment(from).toDate(), moment(to).toDate()] })
-            .then((res) => {
-                if (res.data.isSuccess === true) {
-                    setState((prevState) => ({
-                        ...prevState,
-                        spin: false,
-                        table: res.data.table,
-                        remaining: res.data.remaining,
-                    }));
-                } else if (res.data.isAuthenticated === false) {
-                    <ServerAuth />;
-                }
-            })
-            .catch((err) => {
-                setState((prevState) => ({ ...prevState, spin: false }));
-            });
+        if (menu === 'mytimeoff')
+            axios
+                .post('/api/timeoff', { ...ticket, filter: [moment(from).toDate(), moment(to).toDate()] })
+                .then((res) => {
+                    if (res.data.isSuccess === true) {
+                        setState((prevState) => ({
+                            ...prevState,
+                            spin: false,
+                            table: res.data.table,
+                            remaining: res.data.remaining,
+                        }));
+                    } else if (res.data.isAuthenticated === false) {
+                        <ServerAuth />;
+                    }
+                })
+                .catch((err) => {
+                    setState((prevState) => ({ ...prevState, spin: false }));
+                });
+        else if (menu === 'employees_timeoff')
+            axios
+                .post('/api/timeoff/employees', {
+                    ...ticket,
+                    filter: [moment(from).toDate(), moment(to).toDate()],
+                })
+                .then((res) => {
+                    if (res.data.isSuccess === true) {
+                        setState((prevState) => ({
+                            ...prevState,
+                            spin: false,
+                            table: res.data.table,
+                            remaining: res.data.remaining,
+                        }));
+                    } else if (res.data.isAuthenticated === false) {
+                        <ServerAuth />;
+                    }
+                })
+                .catch((err) => {
+                    setState((prevState) => ({ ...prevState, spin: false }));
+                });
     }, [from, to, update]);
 
     const handleFilter = (e) => {
@@ -49,9 +72,13 @@ export default function Timeoff() {
         if (value) setState((prevState) => ({ ...prevState, [name]: value }));
     };
 
+    const handleMenu = (e) => {
+        setState((prevState) => ({ ...prevState, spin: true, menu: e, update: !update }));
+    };
+
     return (
         <Contents>
-            <Menubar />
+            <Menubar callback={handleMenu} />
             {/* able to request timeoff, able to see request timeoff
                 status:
                 1. request
@@ -92,7 +119,18 @@ export default function Timeoff() {
                     {spin ? (
                         <Spinner />
                     ) : table ? (
-                        <TimeoffTable table={table} filter={handleFilter} />
+                        <TimeoffTable
+                            table={table}
+                            filter={handleFilter}
+                            menu={menu}
+                            callback={() =>
+                                setState((prevState) => ({
+                                    ...prevState,
+                                    spin: true,
+                                    update: !update,
+                                }))
+                            }
+                        />
                     ) : (
                         <h4>No request found</h4>
                     )}
