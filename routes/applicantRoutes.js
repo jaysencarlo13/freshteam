@@ -4,24 +4,25 @@ const authMiddleware = require('../middleware/authMiddleware');
 const authUpload = require('../middleware/uploadMiddleware');
 
 const {
-    fetch,
-    update_personal_info,
-    add_work_experience,
-    update_work_experience,
-    delete_work_experience,
-    add_education,
-    update_education,
-    delete_education,
-    add_skill,
-    update_skill,
-    delete_skill,
-    add_certification_licenses,
-    update_certification_licenses,
-    delete_certification_licenses,
-    update_additional_information,
-    upload_file,
-    download_file,
-    apply,
+	fetch,
+	update_personal_info,
+	add_work_experience,
+	update_work_experience,
+	delete_work_experience,
+	add_education,
+	update_education,
+	delete_education,
+	add_skill,
+	update_skill,
+	delete_skill,
+	add_certification_licenses,
+	update_certification_licenses,
+	delete_certification_licenses,
+	update_additional_information,
+	upload_file,
+	download_file,
+	apply,
+	applicant_delete,
 } = require('../controllers/applicantController');
 
 router.post('/', authMiddleware, fetch);
@@ -41,6 +42,7 @@ router.post('/update/certification_licenses', authMiddleware, update_certificati
 router.post('/delete/certification_licenses', authMiddleware, delete_certification_licenses);
 router.post('/update/additional_information', authMiddleware, update_additional_information);
 router.post('/upload/file', authUpload, upload_file);
+router.post('/delete', applicant_delete);
 router.get('/download/file', download_file);
 
 module.exports = router;

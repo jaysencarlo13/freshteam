@@ -13,20 +13,20 @@ const path = require('path');
 app.use(json());
 app.use(urlencoded({ extended: true }));
 app.use(
-    cors({
-        origin: react_server,
-        credentials: true,
-    })
+	cors({
+		origin: react_server,
+		credentials: true,
+	})
 );
 
 app.use(
-    session({
-        secret: secret,
-        resave: true,
-        saveUninitialized: true,
-        cookie: { secure: false },
-        store: MongoStore.create(mongodbConnection),
-    })
+	session({
+		secret: secret,
+		resave: true,
+		saveUninitialized: true,
+		cookie: { secure: false },
+		store: MongoStore.create(mongodbConnection),
+	})
 );
 
 app.use(cookieParser(secret));
@@ -38,6 +38,7 @@ require('./middleware/sanitizeBody');
 
 //static
 app.use('/api/file', express.static(path.join(__dirname, 'fileupload')));
+app.use(express.static(path.join(__dirname, 'clientserver', 'build')));
 
 //routes
 app.use('/api', require('./routes/dashboardRoutes'));
@@ -52,7 +53,10 @@ app.use('/api/settings', require('./routes/settingsRoutes'));
 app.use('/api/employees', require('./routes/employeeRoutes'));
 app.use('/api/timeoff', require('./routes/timeoffRoutes'));
 app.use('/api/reports', require('./routes/reportsRoutes'));
+app.use('*', (req, res) => {
+	res.sendFile(path.join(__dirname, 'clientserver', 'build', 'index.html'));
+});
 
 app.listen(3001, async (err) => {
-    if (err) throw err;
+	if (err) throw err;
 });

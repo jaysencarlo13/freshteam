@@ -1,23 +1,23 @@
 const express = require('express');
 const router = express.Router();
 const {
-    getDashboard,
-    getUser,
-    getLogout,
-    updateUser,
-    changepassword,
-    checkAuth,
-    getMyInterviews,
-    updateGoogle,
-    transfer,
-    admin_request,
-    superuser,
-    superuser_accept,
-    superuser_reject,
-    admin_fresh,
-    organization_details,
-    organization_update,
-    send_feedback,
+	getDashboard,
+	getUser,
+	getLogout,
+	updateUser,
+	changepassword,
+	checkAuth,
+	getMyInterviews,
+	updateGoogle,
+	transfer,
+	admin_request,
+	superuser,
+	superuser_accept,
+	superuser_reject,
+	admin_fresh,
+	organization_details,
+	organization_update,
+	send_feedback,
 } = require('../controllers/dashboardController');
 const authMiddleware = require('../middleware/authMiddleware');
 
@@ -37,6 +37,6 @@ router.post('/admin_fresh', authMiddleware, admin_fresh);
 router.post('/organization', authMiddleware, organization_details);
 router.post('/organization/update', authMiddleware, organization_update);
 router.post('/interview/feedback', authMiddleware, send_feedback);
-router.post('/logout', authMiddleware, getLogout);
+router.post('/logout', getLogout);
 
 module.exports = router;
